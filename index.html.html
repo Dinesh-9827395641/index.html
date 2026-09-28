@@ -1,0 +1,2372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Question Paper &amp; Answer Key Generator</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#eef2f7;--card:#fff;--ink:#1f2937;--muted:#6b7280;--line:#d9e0ea;--brand:#1e5eff;--brand-d:#0b3fd1;--ok:#0a9d5a;--danger:#d94141;--warn:#c77700;--radius:10px;--shadow:0 1px 3px rgba(16,24,40,.08),0 1px 2px rgba(16,24,40,.06);}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:14px}
+button{font-family:inherit}
+.login-screen{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#0b3fd1 0%,#1e5eff 55%,#4a7bd0 100%);}
+.login-screen.hide{display:none}
+.login-box{background:#fff;border-radius:16px;padding:28px 26px;max-width:420px;width:100%;box-shadow:0 25px 70px rgba(0,0,0,.35);}
+.login-brand{font-size:22px;font-weight:800;color:var(--brand-d);text-align:center;line-height:1.2}
+.login-sub{font-size:11px;color:#6b7280;text-align:center;margin-top:3px;margin-bottom:20px;letter-spacing:.03em}
+.login-options{display:flex;flex-direction:column;gap:10px}
+.login-option{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:10px;border:1px solid #d9e0ea;background:#fff;cursor:pointer;text-align:left;font-size:14px;font-weight:600;color:#1f2937;transition:.15s;}
+.login-option:hover{background:#f3f6fb;border-color:#c7d8ff;transform:translateY(-1px)}
+.login-option .ico{font-size:22px;line-height:1}
+.login-option .txt{flex:1}
+.login-option .txt small{display:block;font-size:11px;color:#6b7280;font-weight:500;margin-top:2px}
+.login-option.demo{background:#f0f7ff;border-color:#c7d8ff}
+.login-option.demo:hover{background:#e5efff}
+.login-form{display:none}
+.login-form.open{display:block}
+.login-form-title{font-size:17px;font-weight:700;color:var(--brand-d);text-align:center;margin-bottom:14px}
+.login-form input{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:9px;font-size:14px;margin-bottom:10px;}
+.login-form input:focus{outline:2px solid #c7d8ff;border-color:var(--brand)}
+.login-error{color:var(--danger);font-size:12.5px;font-weight:600;min-height:18px;margin-bottom:6px;text-align:center}
+.login-actions{display:flex;gap:8px;margin-top:6px}
+.login-actions .btn{flex:1;justify-content:center}
+.lock-screen{position:fixed;inset:0;background:linear-gradient(135deg,#0b3fd1,#1e5eff);z-index:550;display:none;align-items:center;justify-content:center;padding:24px;}
+.lock-screen.open{display:flex}
+.lock-box{background:#fff;border-radius:14px;padding:28px 26px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center}
+.lock-box h2{margin:0 0 6px;font-size:20px;color:var(--brand-d)}
+.lock-box p{margin:0 0 16px;color:#6b7280;font-size:13px}
+.lock-box input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:15px;text-align:center;letter-spacing:2px}
+.lock-box .btn{width:100%;margin-top:12px;padding:12px 14px;font-size:14px}
+.lock-box .msg{color:var(--danger);font-size:12.5px;font-weight:600;min-height:18px;margin-top:8px}
+.app-layout{display:flex;min-height:100vh;align-items:stretch}
+.sidebar{width:240px;flex:0 0 240px;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:12px;padding:16px 12px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{font-weight:700;font-size:15px;color:var(--brand-d);line-height:1.2;padding:0 4px}
+.brand .sub{font-size:10.5px;color:#6b7280;font-weight:500;letter-spacing:.02em;margin-top:2px}
+.user-chip{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:#eef3ff;border:1px solid #c7d8ff;font-size:12px;}
+.user-chip .name{flex:1;font-weight:700;color:var(--brand-d);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-chip .role{font-size:10px;font-weight:700;background:var(--brand);color:#fff;padding:2px 6px;border-radius:10px;text-transform:uppercase;letter-spacing:.03em}
+.user-chip .role.master{background:#c77700}
+.user-chip .role.guest{background:#6b7280}
+.user-chip .logout-btn{border:0;background:transparent;cursor:pointer;color:var(--danger);font-weight:800;font-size:15px;padding:0 4px;line-height:1;}
+.tabs{display:flex;flex-direction:column;gap:3px}
+.tabs button{background:transparent;border:1px solid transparent;padding:9px 11px;border-radius:8px;cursor:pointer;font-size:13px;color:#374151;font-weight:600;text-align:left;display:flex;align-items:center;gap:6px}
+.tabs button:hover{background:#f1f5fb}
+.tabs button.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.tabs button.hide{display:none}
+.topactions{display:flex;flex-direction:column;gap:6px;padding-top:10px;border-top:1px solid var(--line);margin-top:auto}
+.topactions .btn{width:100%;justify-content:center}
+.save-state{font-size:10.5px;color:#0a7a45;text-align:center;padding:2px 4px;font-weight:600;min-height:14px}
+.app-main{flex:1;padding:18px 20px 40px;min-width:0}
+@media (max-width:900px){.app-layout{flex-direction:column}.sidebar{width:100%;flex:0 0 auto;height:auto;position:relative;flex-direction:row;flex-wrap:wrap;align-items:center}.sidebar .brand{flex:0 0 auto}.user-chip{flex:1 1 auto;min-width:180px}.tabs{flex-direction:row;flex-wrap:wrap;flex:1 1 100%}.tabs button{flex:0 0 auto}.topactions{flex-direction:row;flex-wrap:wrap;border-top:0;padding-top:0;margin-top:0;width:100%}.topactions .btn{width:auto;flex:1 1 auto}}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--brand-d)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1;min-width:140px}
+label.fld{display:block;margin-bottom:10px;font-size:12px;font-weight:600;color:#374151}
+label.fld span{display:block;margin-bottom:4px}
+input[type=text],input[type=date],input[type=number],input[type=password],select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;color:var(--ink)}
+textarea{resize:vertical;min-height:70px;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:2px solid #c7d8ff;border-color:var(--brand)}
+.btn{background:var(--brand);color:#fff;border:1px solid var(--brand);padding:8px 13px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600}
+.btn:hover{background:var(--brand-d)}
+.btn.ghost{background:#fff;color:#374151;border-color:var(--line)}
+.btn.ghost:hover{background:#f3f6fb}
+.btn.ok{background:var(--ok);border-color:var(--ok)}
+.btn.warn{background:var(--warn);border-color:var(--warn)}
+.btn.danger{background:var(--danger);border-color:var(--danger)}
+.btn.sm{padding:5px 9px;font-size:12px}
+.btn.xs{padding:2px 7px;font-size:11px;border-radius:6px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.muted{color:var(--muted);font-size:12px}
+.hint{font-size:12px;color:var(--muted);margin:6px 0 10px;line-height:1.5}
+.badge{background:#e8f7ee;color:#0a7a45;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#f1f5fb;border:1px solid var(--line);border-radius:20px;padding:4px 10px;font-size:12px;margin:0 6px 6px 0}
+.chip button{border:0;background:transparent;color:var(--danger);cursor:pointer;font-weight:800;font-size:13px}
+.mark-chip{display:inline-flex;align-items:center;gap:6px;background:#eef3ff;border:1px solid #c7d8ff;border-radius:20px;padding:4px 10px;font-size:12px;margin:0 6px 6px 0;font-weight:700;color:var(--brand-d)}
+.mark-chip button{border:0;background:transparent;color:var(--danger);cursor:pointer;font-weight:800;font-size:13px}
+.tscroll{overflow-x:auto}
+table.grid-table{border-collapse:collapse;width:100%;font-size:13px;min-width:640px}
+table.grid-table th,table.grid-table td{border:1px solid var(--line);padding:5px 7px;text-align:center}
+table.grid-table th{background:#f5f8fd;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:#48566b}
+table.grid-table td:first-child{text-align:left;font-weight:600}
+table.grid-table input{padding:5px;text-align:center;border-radius:6px}
+tr.totrow td{background:#f7faff;font-weight:800}
+.sec-block{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:14px;background:#fcfdff}
+.sec-head{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.sec-head input.sec-name{flex:0 0 220px;font-weight:700}
+.sec-head input.sec-desc{flex:1;min-width:200px}
+.subtabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.subtabs button{background:#fff;border:1px solid var(--line);padding:7px 13px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:#374151}
+.subtabs button.active{background:#eef3ff;border-color:var(--brand);color:var(--brand-d)}
+.subpanel{display:none}.subpanel.active{display:block}
+.list-item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:#fff}
+.list-item .li-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.list-item .li-body{font-size:13px;line-height:1.5}
+.tag{display:inline-block;background:#eef3ff;color:var(--brand-d);font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px}
+.tag.g{background:#e8f7ee;color:#0a7a45}
+.tag.o{background:#fff3e0;color:#9a5b00}
+.tag.r{background:#fdeaea;color:#a52626}
+.tag.b{background:#e0e7ff;color:#3730a3}
+.tag.p{background:#f3e8ff;color:#6b21a8}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:100;align-items:flex-start;justify-content:center;padding:24px;overflow:auto}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:12px;max-width:960px;width:100%;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.modal h2{margin:0 0 12px;font-size:16px}
+.modal .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.paper-wrap{background:#dfe6f0;padding:16px;border-radius:10px;overflow:auto}
+.paper{position:relative;background:#fff;margin:0 auto 18px;font-family:"Times New Roman",Georgia,serif;font-size:11.5pt;line-height:1.45;color:#000;box-shadow:0 4px 18px rgba(0,0,0,.18);overflow:hidden}
+.paper-content{position:relative;z-index:1}
+.paper-page-num,.paper-footer{position:absolute;z-index:2;font-family:"Times New Roman",Georgia,serif;font-size:10pt;color:#000}
+.paper-page-num{white-space:nowrap}
+.paper-footer{white-space:normal;text-align:center}
+.wm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);pointer-events:none;user-select:none;white-space:nowrap;font-weight:700;z-index:0;text-align:center}
+.wm img{max-width:5in}
+.pp-head{display:flex;align-items:center;gap:10px;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:10px;position:relative;z-index:1}
+.pp-logo{flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+.pp-logo img{display:block}
+.pp-mid{flex:1;text-align:center}
+.pp-school{font-size:17pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px;line-height:1.2}
+.pp-exam{font-size:13pt;font-weight:700;margin-top:3px}
+.pp-sub{font-size:10.5pt;font-style:italic;margin-top:2px}
+.pp-meta{display:flex;justify-content:space-between;font-size:10.5pt;font-weight:700;margin-top:6px;gap:10px}
+.instr{border:1px solid #000;padding:7px 10px;margin:8px 0 12px;font-size:10.5pt;position:relative;z-index:1}
+.instr-title{font-weight:700;margin-bottom:3px}
+.instr ol{margin:0;padding-left:18px}
+.instr li{margin-bottom:2px}
+.sec-title{font-weight:700;font-size:12pt;text-align:center;text-transform:uppercase;margin:14px 0 3px;border-bottom:1px solid #000;padding-bottom:2px;break-after:avoid;page-break-after:avoid}
+.sec-note{text-align:center;font-size:10pt;font-style:italic;margin-bottom:6px}
+.q{margin:0 0 11px;break-inside:avoid;page-break-inside:avoid;position:relative;z-index:1}
+.q-line{display:flex;gap:8px;align-items:flex-start}
+.q-body{flex:1}
+.q-no{font-weight:700}
+.q-marks{font-weight:700;white-space:nowrap;padding-left:8px}
+.q-img{margin:6px 0 6px 18px}
+.q-img img{display:block;border:0;max-width:100%}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:2px 18px;margin:4px 0 4px 22px}
+.opts.one{grid-template-columns:1fr}
+.opt{font-size:11pt}
+.opt.correct{font-weight:700;text-decoration:underline}
+table.q-table{border-collapse:collapse;margin:6px 0 6px 22px;font-size:10.5pt;width:calc(100% - 22px);max-width:calc(100% - 22px);table-layout:fixed}
+table.q-table td{border:1px solid #000;padding:3px 6px;word-wrap:break-word;overflow-wrap:break-word;word-break:break-word;vertical-align:top}
+.ans{margin:4px 0 0 22px;font-size:10.5pt;background:#f2f7ff;border-left:3px solid #4a7bd0;padding:4px 8px}
+.ans-lbl{font-weight:700;color:#0b3fd1}
+.ans-img{margin:5px 0 0 22px}
+.ans-img img{display:block;max-width:100%}
+.pp-end{text-align:center;font-weight:700;margin-top:14px;font-size:11pt;position:relative;z-index:1}
+.q-ctrl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:#f1f5fb;border:1px dashed #b9c8de;border-radius:8px;padding:5px 8px;margin:0 0 6px;font-family:system-ui,sans-serif;font-size:11.5px}
+.q-ctrl select{padding:3px 5px;font-size:11.5px;border-radius:6px;width:auto}
+.q-ctrl .btn{padding:3px 8px;font-size:11.5px;border-radius:6px}
+#printArea{display:none}
+.user-tab-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;margin-top:4px}
+.user-tab-grid label{display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:12.5px;background:#fff}
+.user-tab-grid label:hover{background:#f3f6fb}
+.user-tab-grid label input{width:16px;height:16px;margin:0}
+.user-tab-grid label.on{background:#eef3ff;border-color:#c7d8ff;font-weight:600;color:var(--brand-d)}
+table.users-table{width:100%;border-collapse:collapse;font-size:13px}
+table.users-table th{text-align:left;padding:8px 10px;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:#48566b;background:#f5f8fd;border-bottom:1px solid var(--line)}
+table.users-table td{padding:9px 10px;border-bottom:1px solid #eef2f7;vertical-align:middle}
+table.users-table tr:hover td{background:#f9fbff}
+.tabs-list-inline{display:flex;flex-wrap:wrap;gap:4px}
+.tabs-list-inline .t{background:#eef3ff;color:var(--brand-d);font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:5px}
+@media print{html,body{width:auto;height:auto;margin:0;padding:0;background:#fff !important}.app-layout,.sidebar,.app-main,.modal-bg,.lock-screen,.login-screen,.paper-wrap{display:none !important}#printArea{display:block !important;margin:0;padding:0;border:0;width:auto}#printArea > *{margin:0;padding:0}#printArea .paper{margin:0 !important;box-shadow:none !important;overflow:hidden !important;page-break-before:always;break-before:page;page-break-inside:avoid;break-inside:avoid}#printArea .paper:first-child{page-break-before:auto;break-before:auto}#printArea .wm{position:absolute !important}#printArea .q{page-break-inside:avoid;break-inside:avoid}#printArea .sec-title{page-break-after:avoid;break-after:avoid}}
+.help h4{margin:18px 0 6px;color:var(--brand-d);font-size:14px}
+.help p,.help li{font-size:13px;line-height:1.65;color:#374151}
+.help code{background:#f1f5fb;padding:1px 5px;border-radius:4px;font-size:12px}
+.faq{border-bottom:1px solid var(--line);padding:10px 0}
+.faq b{display:block;margin-bottom:4px;color:#111827}
+.tbl-tools{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.tbl-edit{border-collapse:collapse;width:100%;table-layout:fixed}
+.tbl-edit td{border:1px solid var(--line);padding:4px;min-width:0;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word;word-break:break-word}
+.tbl-edit td[contenteditable]:focus{outline:2px solid #c7d8ff;background:#fbfdff}
+.colwidths{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.colwidths label{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.colwidths input{width:56px;padding:3px 5px;font-size:11px}
+.opt-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.opt-row input[type=radio]{width:16px;height:16px;flex:0 0 auto}
+.opt-row input[type=text]{flex:1}
+.opt-letter{width:26px;text-align:center;font-weight:800;color:var(--brand-d);font-size:13px;flex:0 0 auto}
+.logo-prev{width:1in;height:1in;border:1px dashed var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fafcff;margin-bottom:6px}
+.logo-prev img{max-width:100%;max-height:100%}
+.logo-prev .ph{font-size:10px;color:var(--muted)}
+.subject-block{margin-bottom:18px;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(16,24,40,.05)}
+.subject-header{display:flex;gap:8px;align-items:center;background:linear-gradient(180deg,#eef3ff,#dfe8ff);border:1px solid #c7d8ff;border-bottom:0;padding:10px 12px;border-radius:10px 10px 0 0;flex-wrap:wrap}
+.subject-header .subj-name-input{flex:1;min-width:180px;font-weight:700;font-size:15px;color:var(--brand-d);background:transparent;border:1px solid transparent;padding:4px 6px;border-radius:6px}
+.subject-header .subj-name-input:hover{background:#fff;border-color:#c7d8ff}
+.subject-header .subj-name-input:focus{background:#fff;outline:2px solid #c7d8ff}
+.subject-body{border:1px solid #e5eaf2;border-top:0;border-radius:0 0 10px 10px;padding:12px;background:#fcfdff}
+.chapters-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:6px}
+.chapters-table th{text-align:left;padding:6px 8px;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#48566b;background:#f5f8fd;border-bottom:1px solid var(--line)}
+.chapters-table td{padding:7px 8px;border-bottom:1px solid #eef2f7}
+.chapters-table tr:last-child td{border-bottom:0}
+.chapters-table tr:hover td{background:#f9fbff}
+.chapters-table td.actions-cell{text-align:right;white-space:nowrap}
+.subject-filter-bar{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px}
+</style>
+<style id="printPageStyle">@page{size:A4;margin:0}</style>
+</head>
+<body>
+
+<!-- ============== LOGIN ============== -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-brand">📝 Q-Paper Generator</div>
+    <div class="login-sub">Made by Dinesh Soni</div>
+
+    <div id="loginOptions" class="login-options">
+      <button class="login-option" data-mode="host">
+        <span class="ico">🔑</span>
+        <span class="txt">Host Login<small>Master account — full access</small></span>
+      </button>
+      <button class="login-option" data-mode="user">
+        <span class="ico">👤</span>
+        <span class="txt">User Login<small>Login with your ID and password</small></span>
+      </button>
+      <button class="login-option demo" data-mode="guest">
+        <span class="ico">🎬</span>
+        <span class="txt">Try Demo<small>One free paper generation — no question bank</small></span>
+      </button>
+    </div>
+
+    <div id="loginForm" class="login-form">
+      <div class="login-form-title" id="loginFormTitle">Login</div>
+      <input type="text" id="loginUser" placeholder="Login ID" autocomplete="off">
+      <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
+      <div class="login-error" id="loginError"></div>
+      <div class="login-actions">
+        <button class="btn ghost" id="loginBack">← Back</button>
+        <button class="btn" id="loginSubmit">Login</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============== FILE PASSWORD LOCK ============== -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-box">
+    <div style="font-size:38px;line-height:1;margin-bottom:6px">🔒</div>
+    <h2>App Locked</h2>
+    <p>Enter the file password to continue</p>
+    <input type="password" id="lockPassword" autocomplete="current-password" placeholder="Password">
+    <button class="btn" id="lockUnlock">Unlock</button>
+    <div class="msg" id="lockError"></div>
+  </div>
+</div>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <div>📝 Q-Paper Generator</div>
+      <div class="sub">Made by Dinesh Soni</div>
+    </div>
+
+    <div class="user-chip" id="userChip">
+      <span id="userName" class="name">—</span>
+      <span id="userRole" class="role">—</span>
+      <button class="logout-btn" id="btnLogout" title="Logout">⏻</button>
+    </div>
+
+    <nav class="tabs" id="tabs">
+      <button data-tab="setup" class="active">1. Setup</button>
+      <button data-tab="preview">2. Preview &amp; Edit</button>
+      <button data-tab="bank">3. Question Bank</button>
+      <button data-tab="blueprint">4. Blue Print</button>
+      <button data-tab="subjects">5. Subjects &amp; Chapters</button>
+      <button data-tab="saved">6. Saved Papers</button>
+      <button data-tab="users">👥 Users</button>
+      <button data-tab="help">7. Help &amp; FAQ</button>
+    </nav>
+
+    <div class="topactions">
+      <button class="btn sm ok" id="btnExportHtml">💾 Save App File</button>
+      <button class="btn sm ghost" id="btnConnectFile">🔗 Auto-save to File</button>
+      <button class="btn sm ghost" id="btnPassword">🔐 App Password</button>
+      <button class="btn sm ghost" id="btnExportJson">⬇ JSON Backup</button>
+      <button class="btn sm ghost" id="btnImportJson">⬆ Import JSON</button>
+      <button class="btn sm danger" id="btnReset">🔒 Reset All</button>
+      <input type="file" id="fileJson" accept=".json" hidden>
+      <div class="save-state" id="saveState"></div>
+    </div>
+  </aside>
+
+  <main class="app-main">
+
+  <section class="panel active" id="panel-setup">
+    <div class="card" style="border-left:4px solid var(--brand)">
+      <h3>0 · Subject for this Paper</h3>
+      <div class="row" style="align-items:flex-end">
+        <label class="fld" style="flex:2"><span>Select Subject</span><select id="sSubject"></select></label>
+        <button class="btn sm" id="btnQuickAddSubject" style="flex:0 0 auto;margin-bottom:10px">+ Add New Subject</button>
+        <button class="btn sm ghost" id="btnGoSubjects" style="flex:0 0 auto;margin-bottom:10px">Manage Subjects →</button>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>1 · Institute &amp; Exam Details</h3>
+        <label class="fld"><span>Name of School / Institute</span><input type="text" id="sSchool"></label>
+        <label class="fld"><span>Name of Exam</span><input type="text" id="sExam"></label>
+        <div class="row">
+          <label class="fld"><span>Date of Exam</span><input type="date" id="sDate"></label>
+          <label class="fld"><span>Time Required</span><input type="text" id="sTime"></label>
+        </div>
+      </div>
+      <div class="card">
+        <h3>2 · Logos</h3>
+        <div class="grid2">
+          <div>
+            <div class="logo-prev" id="logoLPrev"><span class="ph">No logo</span></div>
+            <input type="file" id="logoLFile" accept="image/*">
+            <div class="row" style="margin-top:6px">
+              <label class="fld"><span>W (in)</span><input type="number" step="0.1" min="0.2" id="logoLW"></label>
+              <label class="fld"><span>H (in)</span><input type="number" step="0.1" min="0.2" id="logoLH"></label>
+            </div>
+            <button class="btn sm ghost" id="logoLClr">Remove</button>
+          </div>
+          <div>
+            <div class="logo-prev" id="logoRPrev"><span class="ph">No logo</span></div>
+            <input type="file" id="logoRFile" accept="image/*">
+            <div class="row" style="margin-top:6px">
+              <label class="fld"><span>W (in)</span><input type="number" step="0.1" min="0.2" id="logoRW"></label>
+              <label class="fld"><span>H (in)</span><input type="number" step="0.1" min="0.2" id="logoRH"></label>
+            </div>
+            <button class="btn sm ghost" id="logoRClr">Remove</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>3 · Watermark</h3>
+        <div class="row" style="margin-bottom:8px">
+          <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="radio" name="wmMode" value="none"> None</label>
+          <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="radio" name="wmMode" value="text"> Text</label>
+          <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="radio" name="wmMode" value="image"> Image</label>
+        </div>
+        <div id="wmTextPanel">
+          <label class="fld"><span>Text</span><input type="text" id="wmText"></label>
+          <div class="row">
+            <label class="fld"><span>Colour</span><input type="color" id="wmColor" style="height:36px;padding:2px"></label>
+            <label class="fld"><span>Opacity</span><input type="number" id="wmOpacity" min="0.02" max="1" step="0.02"></label>
+            <label class="fld"><span>Size (px)</span><input type="number" id="wmSize" min="10" max="300" step="2"></label>
+          </div>
+        </div>
+        <div id="wmImagePanel">
+          <div class="logo-prev" style="width:2in;height:1.3in" id="wmImagePrev"><span class="ph">No image</span></div>
+          <input type="file" id="wmImageFile" accept="image/*">
+          <button class="btn sm ghost" id="wmImageClr" style="margin-top:6px">Remove</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>4 · General Instructions</h3>
+        <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:13px"><input type="checkbox" name="instrMode" value="custom"> Write my own</label>
+        <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:13px"><input type="checkbox" name="instrMode" value="auto"> Auto-fill</label>
+        <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:13px"><input type="checkbox" name="instrMode" value="none"> Not required</label>
+        <div id="instrTextPanel"><label class="fld"><span>Instructions (one per line)</span><textarea id="instrText" rows="5"></textarea></label></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>5 · Marks Configuration</h3>
+      <div class="hint">Default: 1, 3, 4, 6. Add any values (2, 5, 8, 10…).</div>
+      <div id="marksChips"></div>
+      <div class="row" style="max-width:520px;margin-top:8px;align-items:flex-end">
+        <label class="fld" style="flex:0 0 180px"><span>New mark</span><input type="number" id="newMarkValue" min="1" step="1"></label>
+        <button class="btn sm" id="btnAddMark" style="flex:0 0 auto;margin-bottom:10px">+ Add Mark</button>
+        <button class="btn sm ghost" id="btnResetMarks" style="flex:0 0 auto;margin-bottom:10px">Reset</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>6 · Chapters of Selected Subject</h3>
+      <div id="chapterList" style="margin-bottom:10px"></div>
+      <div class="row" style="max-width:560px">
+        <input type="text" id="newChapterName" placeholder="New chapter name">
+        <button class="btn sm" id="btnAddChapter" style="flex:0 0 auto">+ Add Chapter</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>7 · Sections &amp; Distribution</h3>
+      <div id="sectionsWrap"></div>
+      <button class="btn" id="btnAddSection">+ Add Section</button>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>8 · Paper Footer &amp; Page Numbers</h3>
+        <label class="fld"><span>Footer text (optional)</span>
+          <textarea id="sFooter" rows="3" placeholder="e.g. Prepared by: Dept. of Science"></textarea>
+        </label>
+        <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-top:4px">
+          <input type="checkbox" id="sShowPageNumbers"> Show page numbers <span class="muted">("Page X of N")</span>
+        </label>
+      </div>
+      <div class="card"><h3>9 · Paper End Message</h3><input type="text" id="sEnd"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-preview">
+    <div class="card">
+      <h3>Preview &amp; Edit</h3>
+      <div class="row" style="align-items:flex-end;gap:8px">
+        <button class="btn" id="btnGenerate" style="flex:0 0 auto;margin-bottom:10px">🔄 Generate</button>
+        <button class="btn ghost" id="btnShuffleSection" style="flex:0 0 auto;margin-bottom:10px">🔀 Section Shuffle</button>
+        <button class="btn ghost" id="btnShuffleWhole" style="flex:0 0 auto;margin-bottom:10px">🔀 Whole Shuffle</button>
+        <button class="btn ghost" id="btnToggleAns" style="flex:0 0 auto;margin-bottom:10px">👁 Answers</button>
+        <button class="btn ghost" id="btnSavePaper" style="flex:0 0 auto;margin-bottom:10px">💾 Save Paper</button>
+        <button class="btn ok" id="btnFinal" style="flex:0 0 auto;margin-bottom:10px">✅ Final Preview</button>
+      </div>
+      <div class="row" style="align-items:flex-end;gap:8px;margin-top:4px">
+        <label class="fld" style="flex:0 0 170px;min-width:auto;margin-bottom:10px"><span>Page size</span>
+          <select id="previewPageSize">
+            <option value="A4">A4 (default)</option><option value="A3">A3</option>
+            <option value="A5">A5</option><option value="Letter">Letter</option>
+            <option value="Legal">Legal</option><option value="Tabloid">Tabloid</option>
+            <option value="Executive">Executive</option><option value="B5">B5</option>
+          </select>
+        </label>
+        <label class="fld" style="flex:0 0 90px;min-width:auto;margin-bottom:10px"><span>Top (in)</span><input type="number" min="0.2" max="2" step="0.05" id="marginTop"></label>
+        <label class="fld" style="flex:0 0 90px;min-width:auto;margin-bottom:10px"><span>Right (in)</span><input type="number" min="0.2" max="2" step="0.05" id="marginRight"></label>
+        <label class="fld" style="flex:0 0 90px;min-width:auto;margin-bottom:10px"><span>Bottom (in)</span><input type="number" min="0.2" max="2" step="0.05" id="marginBottom"></label>
+        <label class="fld" style="flex:0 0 90px;min-width:auto;margin-bottom:10px"><span>Left (in)</span><input type="number" min="0.2" max="2" step="0.05" id="marginLeft"></label>
+        <button class="btn ghost sm" id="btnResetMargins" style="flex:0 0 auto;margin-bottom:10px">↺ 0.75"</button>
+      </div>
+      <div class="hint"><b>Print tip:</b> Print dialog → Save as PDF → page size = app page size → Margins: Default → Scale: 100% → headers/footers off.</div>
+      <div id="previewStatus" class="muted"></div>
+    </div>
+    <div class="paper-wrap" id="paperPreview"></div>
+  </section>
+
+  <section class="panel" id="panel-bank">
+    <div class="card">
+      <h3>Question Bank</h3>
+      <div class="row" style="margin-bottom:10px;align-items:flex-end">
+        <label class="fld" style="flex:2"><span>Subject</span><select id="bankSubject"></select></label>
+        <div style="flex:1;min-width:160px;margin-bottom:10px"><span class="muted">Count: <b id="bankCount">0</b></span></div>
+      </div>
+      <div class="subtabs" id="bankTabs">
+        <button data-sub="bulk" class="active">Bulk Upload</button>
+        <button data-sub="add">Add Question</button>
+        <button data-sub="browse">Browse / Edit / Print</button>
+      </div>
+
+      <div class="subpanel active" id="sub-bulk">
+        <div class="hint">Markers: <code>Chapter:</code> <code>Marks:</code> <code>Type:</code> <code>Format:</code> <code>Ans:</code> · options like <code>(a)</code> · <code>*</code> at end of correct option.</div>
+        <div class="grid2">
+          <label class="fld"><span>Default chapter</span><select id="bulkChapter"></select></label>
+          <div class="row">
+            <label class="fld"><span>Default marks</span><select id="bulkMarks"></select></label>
+            <label class="fld"><span>Default type</span><select id="bulkType"><option value="RU">RU</option><option value="AP">AP</option><option value="EAC">EAC</option></select></label>
+          </div>
+        </div>
+        <label class="fld"><span>Paste here</span><textarea id="bulkText" rows="12"></textarea></label>
+        <div class="row" style="max-width:560px"><button class="btn" id="btnParseBulk">🔍 Parse</button><button class="btn ok" id="btnAddBulk">➕ Add All</button></div>
+        <div id="bulkResult" style="margin-top:12px"></div>
+      </div>
+
+      <div class="subpanel" id="sub-add">
+        <div class="grid2">
+          <label class="fld"><span>Chapter</span><select id="qChapter"></select></label>
+          <div class="row">
+            <label class="fld"><span>Marks</span><select id="qMarks"></select></label>
+            <label class="fld"><span>Type</span><select id="qType"><option value="RU">RU</option><option value="AP">AP</option><option value="EAC">EAC</option></select></label>
+          </div>
+        </div>
+        <div class="grid2">
+          <label class="fld"><span>Format</span><select id="qFormat"><option value="desc">Descriptive</option><option value="mcq">MCQ</option><option value="tf">True / False</option></select></label>
+          <div class="fmt-note" id="fmtNote"></div>
+        </div>
+        <label class="fld"><span>Question text</span><textarea id="qText" rows="3"></textarea></label>
+        <div class="grid2">
+          <div>
+            <label class="fld"><span>Question image</span><input type="file" id="qImage" accept="image/*"></label>
+            <div class="row" style="align-items:flex-end">
+              <label class="fld" style="max-width:110px"><span>W (in)</span><input type="number" step="0.1" id="qImgW" value="3"></label>
+              <label class="fld" style="max-width:110px"><span>H (in)</span><input type="number" step="0.1" id="qImgH" value="2"></label>
+            </div>
+            <div class="row" style="margin-bottom:8px"><button class="btn sm ghost" id="qImgPaste">📋 Paste</button><button class="btn sm ghost" id="qImgClr">Clear</button></div>
+            <div id="qImgPrev"></div>
+          </div>
+          <div>
+            <label class="fld"><span>Answer image</span><input type="file" id="qAnsImage" accept="image/*"></label>
+            <div class="row" style="margin-bottom:8px"><button class="btn sm ghost" id="qAnsImgPaste">📋 Paste</button><button class="btn sm ghost" id="qAnsImgClr">Clear</button></div>
+            <div id="qAnsImgPrev"></div>
+          </div>
+        </div>
+        <div id="optBlock" style="margin-top:8px;display:none"><h4 style="font-size:13px;margin:6px 0">MCQ Options</h4><div id="optList"></div><button class="btn sm ghost" id="btnAddOpt">+ Add Option</button></div>
+        <div id="tfBlock" style="margin-top:8px;display:none"><h4 style="font-size:13px;margin:6px 0">True / False</h4><div class="tf-box"><label>Correct: <select id="tfAnswer"><option>True</option><option>False</option></select></label></div></div>
+        <div style="margin-top:14px">
+          <h4 style="font-size:13px;margin:6px 0">Table (optional)</h4>
+          <div class="tbl-tools">
+            <button class="btn xs ghost" data-tbl="addrow">+ Row</button><button class="btn xs ghost" data-tbl="delrow">− Row</button>
+            <button class="btn xs ghost" data-tbl="addcol">+ Col</button><button class="btn xs ghost" data-tbl="delcol">− Col</button>
+            <button class="btn xs ghost" data-tbl="normalize">Fit 100%</button><button class="btn xs ghost" data-tbl="clear">Clear</button>
+          </div>
+          <div class="colwidths" id="colWidths"></div><div id="tblWrap"></div>
+        </div>
+        <label class="fld" style="margin-top:14px"><span>Answer / Solution</span><textarea id="qAnswer" rows="3"></textarea></label>
+        <div class="row" style="margin-top:12px;max-width:560px"><button class="btn ok" id="btnSaveQ">💾 Save</button><button class="btn ghost" id="btnResetQ">Reset Form</button></div>
+        <div id="addQStatus" class="muted" style="margin-top:8px"></div>
+      </div>
+
+      <div class="subpanel" id="sub-browse">
+        <div class="row" style="margin-bottom:10px">
+          <label class="fld"><span>Chapter</span><select id="fChapter"></select></label>
+          <label class="fld"><span>Marks</span><select id="fMarks"><option value="">All</option></select></label>
+          <label class="fld"><span>Type</span><select id="fType"><option value="">All</option><option>RU</option><option>AP</option><option>EAC</option></select></label>
+          <label class="fld"><span>Format</span><select id="fFormat"><option value="">All</option><option value="mcq">MCQ</option><option value="tf">True/False</option><option value="desc">Descriptive</option></select></label>
+          <label class="fld"><span>Search</span><input type="text" id="fSearch"></label>
+        </div>
+        <div class="card" style="background:#f8fafc;margin-bottom:12px">
+          <h3 style="margin-bottom:8px">🖨 Print / Export Bank</h3>
+          <div class="row" style="gap:6px">
+            <button class="btn" id="btnBankPrintWithAns" style="flex:0 0 auto">🖨 With Answers</button>
+            <button class="btn ghost" id="btnBankPrintWithoutAns" style="flex:0 0 auto">🖨 Without Answers</button>
+            <button class="btn ghost" id="btnBankPrintBoth" style="flex:0 0 auto">🖨 Both</button>
+            <button class="btn ghost" id="btnBankExportWord" style="flex:0 0 auto">⬇ Word</button>
+          </div>
+        </div>
+        <div id="bankList"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-blueprint">
+    <div class="card"><h3>Blue Print</h3><button class="btn ghost sm" id="btnBpRefresh">🔄 Refresh</button><div id="bpContent" style="margin-top:12px"></div></div>
+  </section>
+
+  <section class="panel" id="panel-subjects">
+    <div class="card">
+      <h3>Subjects &amp; Chapters</h3>
+      <div class="hint">Use the filter to show a single subject or all. Use ↑ / ↓ to change the order of subjects.</div>
+      <div class="subject-filter-bar">
+        <label class="fld" style="flex:0 0 260px;min-width:200px;margin-bottom:0">
+          <span>Filter</span>
+          <select id="subjectFilter"><option value="">All Subjects</option></select>
+        </label>
+        <div style="flex:1;min-width:200px;display:flex;gap:10px;align-items:flex-end">
+          <label class="fld" style="flex:1;margin-bottom:0"><span>New Subject name</span><input type="text" id="newSubjectName" placeholder="e.g. Science"></label>
+          <button class="btn" id="btnAddSubject" style="flex:0 0 auto">+ Add Subject</button>
+        </div>
+      </div>
+    </div>
+    <div id="subjectsList"></div>
+  </section>
+
+  <section class="panel" id="panel-users">
+    <div class="card">
+      <h3>➕ Add New User</h3>
+      <div class="hint">Create a login for a user. Choose which tabs they can access. The Users tab is master-only and not assignable.</div>
+      <div class="row">
+        <label class="fld"><span>Login ID (username)</span><input type="text" id="newUserId" placeholder="e.g. teacher1"></label>
+        <label class="fld"><span>Display Name</span><input type="text" id="newUserName" placeholder="e.g. Mr. Sharma"></label>
+        <label class="fld"><span>Password</span><input type="text" id="newUserPass" placeholder="password"></label>
+      </div>
+      <div style="margin:8px 0 6px;font-size:12px;font-weight:600;color:#374151">Allowed Tabs:</div>
+      <div class="user-tab-grid" id="newUserTabs"></div>
+      <button class="btn" id="btnAddUser" style="margin-top:12px">+ Add User</button>
+      <div id="addUserMsg" class="muted" style="margin-top:8px;font-weight:600"></div>
+    </div>
+    <div class="card">
+      <h3>👥 Existing Users</h3>
+      <div id="usersList"></div>
+    </div>
+    <div class="card">
+      <h3>🔐 Master Account</h3>
+      <div class="hint">Your master login ID and password.</div>
+      <div class="row">
+        <label class="fld"><span>Master ID</span><input type="text" id="masterId"></label>
+        <label class="fld"><span>Master Password</span><input type="text" id="masterPass"></label>
+        <button class="btn ok" id="btnSaveMaster" style="flex:0 0 auto;margin-bottom:10px">Update Master</button>
+      </div>
+      <div id="masterMsg" class="muted" style="font-weight:600"></div>
+    </div>
+    <div class="card">
+      <h3>🎬 Demo Trial State</h3>
+      <div class="hint">The guest user is allowed one paper generation.</div>
+      <div id="demoStateBox" style="margin-bottom:8px"></div>
+      <button class="btn ghost sm" id="btnResetDemo">Reset Demo Counter</button>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-saved">
+    <div class="card"><h3>Saved Papers</h3><div id="savedList"></div></div>
+  </section>
+
+  <section class="panel" id="panel-help">
+    <div class="card help" id="helpContent"></div>
+  </section>
+
+  </main>
+</div>
+
+<div class="modal-bg" id="modalBg"><div class="modal" id="modalBox"></div></div>
+<div id="printArea"></div>
+
+<script id="embedded-data" type="application/json">{}</script>
+
+<script>
+/* =====================================================================
+   Q-PAPER GENERATOR
+   Made by Dinesh Soni
+   ===================================================================== */
+const ORIGINAL_HTML = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+const PAGE_SIZES = {
+  'A4':{w:8.27,h:11.69,css:'A4'},'A3':{w:11.69,h:16.54,css:'A3'},'A5':{w:5.83,h:8.27,css:'A5'},
+  'Letter':{w:8.5,h:11,css:'letter'},'Legal':{w:8.5,h:14,css:'legal'},
+  'Tabloid':{w:11,h:17,css:'11in 17in'},'Executive':{w:7.25,h:10.5,css:'7.25in 10.5in'},
+  'B5':{w:6.93,h:9.84,css:'6.93in 9.84in'}
+};
+const TAB_DEFS = [
+  {id:'setup',label:'Setup'},{id:'preview',label:'Preview & Edit'},{id:'bank',label:'Question Bank'},
+  {id:'blueprint',label:'Blue Print'},{id:'subjects',label:'Subjects & Chapters'},
+  {id:'saved',label:'Saved Papers'},{id:'help',label:'Help & FAQ'}
+];
+const GUEST_TABS = ['setup','preview','subjects','help'];
+const ALL_TAB_IDS = ['setup','preview','bank','blueprint','subjects','saved','users','help'];
+
+const $ = (s,r=document) => r.querySelector(s);
+const $$ = (s,r=document) => Array.prototype.slice.call(r.querySelectorAll(s));
+const uid = () => 'x' + Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nl2br = s => esc(s).replace(/\n/g,'<br>');
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function fmtDate(v){if(!v)return '';const d=new Date(v+'T00:00:00');if(isNaN(d.getTime()))return v;return d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();}
+function readFile(input,cb){const f=input.files&&input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(f);}
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1200);}
+function normType(t){t=String(t||'').toLowerCase();if(t.startsWith('ru')||t==='r'||t==='u')return'RU';if(t.startsWith('ea')||t==='c')return'EAC';if(t.startsWith('ap')||t==='a'||t==='e')return'AP';return'RU';}
+function normFormat(v){v=String(v||'').toLowerCase();if(v.includes('mcq')||v.includes('multiple')||v.includes('objective'))return'mcq';if(v.includes('true')||v.includes('false')||v==='tf'||v.includes('t/f'))return'tf';if(v.includes('desc')||v.includes('written')||v.includes('subjective')||v.includes('long'))return'desc';return'';}
+function guessFormat(q){if(q.format)return q.format;if(q.options&&q.options.length)return'mcq';if(/^\s*(true|false)\s*$/i.test(q.answer||'')&&+q.marks===1)return'tf';return'desc';}
+function shuffleArray(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function toast(msg){const el=document.createElement('div');el.textContent=msg;el.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0b3fd1;color:#fff;padding:10px 18px;border-radius:8px;z-index:900;font-size:13px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.2)';document.body.appendChild(el);setTimeout(()=>el.remove(),2000);}
+const TYPE_SHORT={RU:'RU',AP:'AP',EAC:'EAC'};
+const FORMAT_SHORT={mcq:'MCQ',tf:'True/False',desc:'Descriptive'};
+const FORMAT_FULL={mcq:'Multiple Choice (MCQ)',tf:'True / False',desc:'Descriptive'};
+
+async function sha256(str){try{if(window.crypto&&crypto.subtle&&window.TextEncoder){const buf=new TextEncoder().encode(str);const hash=await crypto.subtle.digest('SHA-256',buf);return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');}}catch(e){}
+  let h1=0x811c9dc5;for(let i=0;i<str.length;i++){h1^=str.charCodeAt(i);h1=Math.imul(h1,0x01000193);}
+  let h2=5381;for(let i=0;i<str.length;i++)h2=((h2<<5)+h2+str.charCodeAt(i))|0;
+  return 'f'+(h1>>>0).toString(16).padStart(8,'0')+(h2>>>0).toString(16).padStart(8,'0');}
+function randomSalt(){return Math.random().toString(36).slice(2)+Date.now().toString(36)+Math.random().toString(36).slice(2);}
+async function hashPassword(pwd,salt){return await sha256('qpg:'+salt+':'+pwd+':lock');}
+function stripOptionMarker(line){line=String(line||'').trim();if(!line)return null;let m;
+  if((m=line.match(/^[\(\[]\s*([a-hA-H]|\d{1,2})\s*[\)\]]\s*[\.\)\-:]?\s*(.*)$/))){return{letter:String(m[1]).toLowerCase(),text:(m[2]||'').trim()};}
+  if((m=line.match(/^([a-hA-H])\s*[\)\.\-:]\s*(.*)$/))){return{letter:m[1].toLowerCase(),text:(m[2]||'').trim()};}
+  if((m=line.match(/^(\d{1,2})\s*[\)\-:]\s*(.*)$/))){return{letter:m[1],text:(m[2]||'').trim()};}
+  return null;}
+function detectCorrectOption(options,answer){if(!options||!options.length||!answer)return -1;
+  const raw=String(answer).trim();if(!raw)return -1;
+  const letterMap={a:0,b:1,c:2,d:3,e:4,f:5,g:6,h:7,'1':0,'2':1,'3':2,'4':3,'5':4,'6':5,'7':6,'8':7};
+  const lm=raw.match(/^[\(\[]?\s*([a-hA-H]|[1-9])\s*[\)\].\-:]?\s+(.+)$/);
+  if(lm){const letter=lm[1].toLowerCase();const rest=lm[2].trim();
+    if(rest){const byText=options.findIndex(o=>o.trim().toLowerCase()===rest.toLowerCase());if(byText>=0)return byText;
+      const byContains=options.findIndex(o=>{const ol=o.trim().toLowerCase();return ol&&(ol.includes(rest.toLowerCase())||rest.toLowerCase().includes(ol));});
+      if(byContains>=0)return byContains;}
+    if(letterMap[letter]!==undefined&&letterMap[letter]<options.length)return letterMap[letter];}
+  const bare=raw.match(/^[\(\[]?\s*([a-hA-H]|[1-9])\s*[\)\]]?$/);
+  if(bare){const letter=bare[1].toLowerCase();if(letterMap[letter]!==undefined&&letterMap[letter]<options.length)return letterMap[letter];}
+  const lower=raw.toLowerCase();
+  let idx=options.findIndex(o=>o.trim().toLowerCase()===lower);if(idx>=0)return idx;
+  idx=options.findIndex(o=>{const ol=o.trim().toLowerCase();if(ol.length<2)return false;return ol===lower||ol.includes(lower)||lower.includes(ol);});
+  return idx>=0?idx:-1;}
+
+function defaultSetup(){return{subjectId:null,school:'SVKM SCHOOL, DHULE',exam:'',date:'',time:'',
+  logoL:{src:'',w:1,h:1},logoR:{src:'',w:1,h:1},
+  wm:{mode:'none',text:'',color:'#999999',opacity:0.12,size:70,src:''},
+  sections:[{id:uid(),name:'Section A',desc:'',counts:{}}],
+  instr:{mode:'none',text:''},footer:'',
+  endMessage:'*********************Best wishes*********************',
+  marks:[1,3,4,6],margins:{top:0.75,right:0.75,bottom:0.75,left:0.75},
+  pageSize:'A4',showPageNumbers:true};}
+function defaultMaster(){return{id:'Dinesh',password:'Svkm@1812',displayName:'Dinesh Soni'};}
+function defaultDB(){return{subjects:[],chapters:[],questions:[],savedPapers:[],paper:null,
+  setup:defaultSetup(),lock:{enabled:false,hash:'',salt:''},master:defaultMaster(),users:[],demo:{used:0,max:1}};}
+let DB = defaultDB();
+const LS_KEY = 'qpg_data_v13';
+let currentUser = null;
+
+function marksList(){const m=(DB.setup.marks&&DB.setup.marks.length)?DB.setup.marks.slice():[1,3,4,6];return m.map(Number).filter(n=>n>0).sort((a,b)=>a-b);}
+function groupByMark(items){const g={};items.forEach(it=>{const m=+it.marks||1;(g[m]=g[m]||[]).push(it);});return g;}
+function shuffleWithinMarks(items){const g=groupByMark(items);const keys=Object.keys(g).map(Number).sort((a,b)=>a-b);const out=[];keys.forEach(m=>{shuffleArray(g[m]);out.push(...g[m]);});return out;}
+
+let fileHandle=null,autoSaveTimer=null,lastSavedAt=0;
+function saveDB(){try{localStorage.setItem(LS_KEY,JSON.stringify(DB));}catch(e){}updateEmbeddedData();updateSaveState();
+  if(fileHandle){clearTimeout(autoSaveTimer);autoSaveTimer=setTimeout(()=>writeToFileHandle(),500);}}
+function updateEmbeddedData(){const el=$('#embedded-data');if(el){try{el.textContent=JSON.stringify(DB).replace(/</g,'\\u003c');}catch(e){}}}
+function updateSaveState(){const el=$('#saveState');if(!el)return;lastSavedAt=Date.now();const t=new Date(lastSavedAt);
+  const hh=String(t.getHours()).padStart(2,'0');const mm=String(t.getMinutes()).padStart(2,'0');const ss=String(t.getSeconds()).padStart(2,'0');
+  el.textContent=fileHandle?`✓ Auto-saved ${hh}:${mm}:${ss}`:`✓ Browser ${hh}:${mm}:${ss}`;}
+async function writeToFileHandle(){if(!fileHandle)return;try{const json=JSON.stringify(DB).replace(/</g,'\\u003c');
+  let html=ORIGINAL_HTML;const re=/(<script id="embedded-data"[^>]*>)[\s\S]*?(<\/script>)/;
+  if(re.test(html))html=html.replace(re,(m,a,b)=>a+'\n'+json+'\n'+b);
+  else html=html.replace('</body>',`<script id="embedded-data" type="application/json">${json}<\/script>\n</body>`);
+  const w=await fileHandle.createWritable();await w.write(html);await w.close();updateSaveState();
+}catch(e){if(e.name==='NotAllowedError'){fileHandle=null;toast('Auto-save disconnected.');}}}
+async function connectToFile(){if(!window.showSaveFilePicker){alert('Auto-save to file needs Chrome/Edge. Use "Save App File" instead.');return;}
+  try{fileHandle=await window.showSaveFilePicker({suggestedName:'QuestionPaperApp.html',types:[{description:'HTML',accept:{'text/html':['.html']}}]});
+    await writeToFileHandle();updateSaveState();toast('Auto-save connected.');
+  }catch(e){if(e.name!=='AbortError')alert('Could not connect: '+e.message);}}
+
+function normalizeSetup(s){const d=defaultSetup();s=s||{};const out=Object.assign({},d,s);
+  out.logoL=Object.assign({},d.logoL,s.logoL||{});out.logoR=Object.assign({},d.logoR,s.logoR||{});
+  out.wm=Object.assign({},d.wm,s.wm||{});out.instr=Object.assign({},d.instr,s.instr||{});
+  if(!Array.isArray(out.sections)||!out.sections.length)out.sections=[{id:uid(),name:'Section A',desc:'',counts:{}}];
+  out.sections=out.sections.map(x=>({id:x.id||uid(),name:x.name||'Section',desc:x.desc||'',counts:x.counts||{}}));
+  if(!out.endMessage)out.endMessage=d.endMessage;if(!out.school)out.school=d.school;
+  if(!Array.isArray(out.marks)||!out.marks.length)out.marks=[1,3,4,6];
+  out.marks=out.marks.map(Number).filter(n=>n>0).sort((a,b)=>a-b);if(!out.marks.length)out.marks=[1,3,4,6];
+  if(!out.margins||typeof out.margins!=='object'){const m=Math.max(0.2,Math.min(2,+out.margin||0.75));out.margins={top:m,right:m,bottom:m,left:m};}
+  ['top','right','bottom','left'].forEach(k=>{out.margins[k]=Math.max(0.2,Math.min(2,+out.margins[k]||0.75));});
+  if(!out.pageSize||!PAGE_SIZES[out.pageSize])out.pageSize='A4';
+  out.showPageNumbers=out.showPageNumbers!==false;return out;}
+function normalizeQuestion(q){if(!q.id)q.id=uid();q.format=guessFormat(q);
+  if(q.format==='tf'){q.tfAnswer=(/^false$/i.test(q.tfAnswer||q.answer||'')?'False':'True');if(!q.answer)q.answer=q.tfAnswer;}
+  else if(q.format==='mcq'){q.options=(q.options||[]).map(o=>String(o)).map(o=>{const s=stripOptionMarker(o);return s?s.text:o;}).filter(o=>o!=='');
+    if(!q.options.length)q.format='desc';
+    else if(typeof q.correct!=='number'||q.correct<0||q.correct>=q.options.length){const det=detectCorrectOption(q.options,q.answer);q.correct=det>=0?det:0;}}
+  else q.tfAnswer='';return q;}
+function normalizeLock(l){const d={enabled:false,hash:'',salt:''};if(!l||typeof l!=='object')return d;return{enabled:!!l.enabled&&!!l.hash&&!!l.salt,hash:String(l.hash||''),salt:String(l.salt||'')};}
+function normalizeMaster(m){const d=defaultMaster();if(!m||typeof m!=='object')return d;return{id:String(m.id||d.id).trim()||d.id,password:String(m.password||d.password),displayName:String(m.displayName||d.displayName)};}
+function normalizeUser(u){if(!u||typeof u!=='object')return null;const id=String(u.id||'').trim();if(!id)return null;
+  const tabs=Array.isArray(u.tabs)?u.tabs.filter(t=>TAB_DEFS.some(d=>d.id===t)):[];
+  return{id,password:String(u.password||''),displayName:String(u.displayName||id),tabs};}
+function mergeDB(a,b){const out=defaultDB();
+  [a,b].forEach(src=>{if(!src)return;
+    if(src.setup)out.setup=normalizeSetup(Object.assign({},out.setup,src.setup));
+    if(src.lock)out.lock=normalizeLock(Object.assign({},out.lock,src.lock));
+    if(src.master)out.master=normalizeMaster(Object.assign({},out.master,src.master));
+    if(src.demo&&typeof src.demo==='object')out.demo={used:Math.max(0,+src.demo.used||0),max:Math.max(1,+src.demo.max||1)};
+    (src.users||[]).forEach(u=>{const nu=normalizeUser(u);if(!nu)return;const i=out.users.findIndex(x=>x.id.toLowerCase()===nu.id.toLowerCase());if(i>=0)out.users[i]=nu;else out.users.push(nu);});
+    (src.subjects||[]).forEach(s=>{if(!out.subjects.some(x=>x.id===s.id||x.name.toLowerCase()===s.name.toLowerCase()))out.subjects.push({id:s.id||uid(),name:s.name||'General'});});
+    (src.chapters||[]).forEach(c=>{if(!out.chapters.some(x=>x.id===c.id))out.chapters.push({id:c.id||uid(),subjectId:c.subjectId||null,name:c.name||'Chapter'});});
+    (src.questions||[]).forEach(q=>{normalizeQuestion(q);const i=out.questions.findIndex(x=>x.id===q.id);if(i>=0)out.questions[i]=q;else out.questions.push(q);});
+    (src.savedPapers||[]).forEach(p=>{(p.items||[]).forEach(it=>normalizeQuestion(it));const i=out.savedPapers.findIndex(x=>x.id===p.id);if(i>=0)out.savedPapers[i]=p;else out.savedPapers.push(p);});
+    if(src.paper){out.paper=src.paper;(out.paper.items||[]).forEach(it=>normalizeQuestion(it));}});
+  out.setup=normalizeSetup(out.setup);out.lock=normalizeLock(out.lock);out.master=normalizeMaster(out.master);return out;}
+function initDefaults(){
+  if(!Array.isArray(DB.subjects))DB.subjects=[];if(!DB.subjects.length)DB.subjects.push({id:uid(),name:'General'});
+  const firstSub=DB.subjects[0].id;
+  DB.chapters.forEach(c=>{if(!c.subjectId)c.subjectId=firstSub;});
+  DB.questions.forEach(q=>{if(!q.subjectId){const ch=DB.chapters.find(c=>c.id===q.chapterId);q.subjectId=ch?ch.subjectId:firstSub;}normalizeQuestion(q);});
+  if(!DB.setup.subjectId||!DB.subjects.find(s=>s.id===DB.setup.subjectId))DB.setup.subjectId=DB.subjects[0].id;
+  if(!DB.setup.sections||!DB.setup.sections.length)DB.setup.sections=[{id:uid(),name:'Section A',desc:'',counts:{}}];
+  DB.lock=normalizeLock(DB.lock);DB.master=normalizeMaster(DB.master);
+  if(!Array.isArray(DB.users))DB.users=[];
+  if(!DB.demo||typeof DB.demo!=='object')DB.demo={used:0,max:1};}
+function loadDB(){
+  let embedded=null,stored=null;
+  try{const t=($('#embedded-data').textContent||'').trim();if(t&&t!=='{}')embedded=JSON.parse(t);}catch(e){}
+  try{const t=localStorage.getItem(LS_KEY);if(t)stored=JSON.parse(t);}catch(e){}
+  if(!stored){try{['qpg_data_v12','qpg_data_v11','qpg_data_v10','qpg_data_v9','qpg_data_v8','qpg_data_v7','qpg_data_v6','qpg_data_v5','qpg_data_v4','qpg_data_v3','qpg_data_v2'].some(k=>{const v=localStorage.getItem(k);if(v){stored=JSON.parse(v);return true;}return false;});}catch(e){}}
+  DB=mergeDB(embedded,stored);initDefaults();
+  if(!DB.users.length){
+    DB.users.push({id:'Admin',password:'123',displayName:'Admin',tabs:['setup','preview','bank','blueprint','subjects','saved','help']});
+    saveDB();
+  }
+}
+
+/* =====================================================================
+   LOGIN SYSTEM
+   ===================================================================== */
+let loginMode='';
+function showLoginScreen(){
+  $('#loginScreen').classList.remove('hide');
+  $('#loginOptions').style.display='';
+  $('#loginForm').classList.remove('open');
+  $('#loginUser').value='';$('#loginPass').value='';$('#loginError').textContent='';
+  loginMode='';
+  document.body.style.overflow='hidden';}
+function hideLoginScreen(){$('#loginScreen').classList.add('hide');document.body.style.overflow='';}
+function setLoginMode(mode){
+  loginMode=mode;
+  const titles={host:'Host Login',user:'User Login'};
+  $('#loginFormTitle').textContent=titles[mode]||'Login';
+  $('#loginError').textContent='';
+  $('#loginUser').value='';$('#loginPass').value='';
+  $('#loginOptions').style.display='none';
+  $('#loginForm').classList.add('open');
+  setTimeout(()=>$('#loginUser').focus(),100);}
+function backToOptions(){loginMode='';$('#loginForm').classList.remove('open');$('#loginOptions').style.display='';}
+
+$('#loginOptions').addEventListener('click',e=>{
+  const b=e.target.closest('.login-option');if(!b)return;
+  const mode=b.dataset.mode;
+  if(mode==='guest'){startGuestSession();return;}
+  setLoginMode(mode);});
+$('#loginBack').onclick=backToOptions;
+$('#loginSubmit').onclick=async()=>{
+  const id=$('#loginUser').value.trim();
+  const pwd=$('#loginPass').value;
+  const err=$('#loginError');
+  err.textContent='';
+  if(!id){err.textContent='Enter Login ID.';return;}
+  if(!pwd){err.textContent='Enter Password.';return;}
+  if(loginMode==='host'){
+    const m=DB.master||defaultMaster();
+    if(id.toLowerCase()===String(m.id).toLowerCase()&&pwd===m.password){
+      currentUser={id:m.id,displayName:m.displayName||m.id,isMaster:true,isGuest:false,tabs:[]};
+      onLoginSuccess();
+    }else{err.textContent='Invalid host credentials.';}
+    return;}
+  if(loginMode==='user'){
+    const u=(DB.users||[]).find(x=>x.id.toLowerCase()===id.toLowerCase());
+    if(!u){err.textContent='User not found.';return;}
+    if(pwd!==u.password){err.textContent='Incorrect password.';return;}
+    currentUser={id:u.id,displayName:u.displayName||u.id,isMaster:false,isGuest:false,tabs:(u.tabs||[]).slice()};
+    onLoginSuccess();return;}
+};
+$('#loginUser').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginPass').focus();});
+$('#loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginSubmit').click();});
+
+function startGuestSession(){
+  if(DB.demo.used>=DB.demo.max){
+    alert('The demo trial has already been used on this file.\n\nPlease login with your ID and password, or ask the host for access.');
+    return;}
+  currentUser={id:'guest',displayName:'Guest (Demo)',isMaster:false,isGuest:true,tabs:GUEST_TABS.slice()};
+  onLoginSuccess();
+  setTimeout(()=>{alert('🎬 Welcome to the demo!\n\nYou can explore Setup, Preview & Edit, Subjects & Chapters, and Help.\n\nYou have 1 free paper generation in this demo. The Question Bank tab is not available in demo mode.\n\nClick "Generate" in Preview & Edit to try it out.');},200);}
+
+function onLoginSuccess(){
+  try{
+    hideLoginScreen();
+    updateUserChip();
+    applyTabPermissions();
+    renderAll();
+    if(DB.lock&&DB.lock.enabled){
+      $('#lockScreen').classList.add('open');
+      $('#lockPassword').value='';$('#lockError').textContent='';
+      setTimeout(()=>$('#lockPassword').focus(),120);
+    }else{
+      const firstVisible=document.querySelector('#tabs button:not(.hide)');
+      if(firstVisible)switchTab(firstVisible.dataset.tab);
+    }
+  }catch(err){console.error('Login success error:',err);alert('Error after login: '+err.message);}
+}
+function updateUserChip(){
+  if(!currentUser){$('#userName').textContent='—';$('#userRole').textContent='—';return;}
+  $('#userName').textContent=currentUser.displayName||currentUser.id;
+  const roleEl=$('#userRole');
+  roleEl.classList.remove('master','guest');
+  if(currentUser.isMaster){roleEl.textContent='Host';roleEl.classList.add('master');}
+  else if(currentUser.isGuest){roleEl.textContent='Demo';roleEl.classList.add('guest');}
+  else{roleEl.textContent='User';}}
+function applyTabPermissions(){
+  if(!currentUser){ALL_TAB_IDS.forEach(t=>hideTab(t));return;}
+  let allowed;
+  if(currentUser.isMaster)allowed=ALL_TAB_IDS.slice();
+  else if(currentUser.isGuest)allowed=GUEST_TABS.slice();
+  else allowed=(currentUser.tabs||[]).slice();
+  ALL_TAB_IDS.forEach(t=>{if(allowed.includes(t))showTab(t);else hideTab(t);});
+  const activeBtn=document.querySelector('#tabs button.active');
+  if(activeBtn&&activeBtn.classList.contains('hide')){
+    const firstVisible=document.querySelector('#tabs button:not(.hide)');
+    if(firstVisible)switchTab(firstVisible.dataset.tab);}}
+function hideTab(id){const btn=document.querySelector(`#tabs button[data-tab="${id}"]`);if(btn)btn.classList.add('hide');}
+function showTab(id){const btn=document.querySelector(`#tabs button[data-tab="${id}"]`);if(btn)btn.classList.remove('hide');}
+
+$('#btnLogout').onclick=()=>{
+  if(!confirm('Logout and return to login screen?'))return;
+  currentUser=null;
+  $('#paperPreview').innerHTML='';$('#previewStatus').textContent='';
+  showLoginScreen();
+  applyTabPermissions();};
+
+async function tryUnlock(){
+  const pwd=$('#lockPassword').value;
+  if(!pwd){$('#lockError').textContent='Enter password.';return;}
+  const h=await hashPassword(pwd,DB.lock.salt);
+  if(h===DB.lock.hash){
+    $('#lockScreen').classList.remove('open');toast('Unlocked.');
+    const firstVisible=document.querySelector('#tabs button:not(.hide)');
+    if(firstVisible)switchTab(firstVisible.dataset.tab);
+  }else{$('#lockError').textContent='Incorrect password.';$('#lockPassword').value='';$('#lockPassword').focus();}}
+$('#lockUnlock').onclick=tryUnlock;
+$('#lockPassword').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock();});
+
+$('#btnPassword').onclick=()=>openPasswordModal();
+function openPasswordModal(){
+  const locked=DB.lock&&DB.lock.enabled;
+  const html=`<h2>${locked?'🔐 App Password':'🔐 Set App Password'}</h2>
+    <div class="hint">${locked?'A file password is set. Every time this file is opened (after login), this password will be required.':'Set a file password as a second layer of security.'}</div>
+    ${locked?`<label class="fld"><span>Current file password</span><input type="password" id="pwdCurrent"></label>`:''}
+    <label class="fld"><span>New file password ${locked?'<span class="muted">(blank = keep)</span>':''}</span><input type="password" id="pwdNew"></label>
+    <label class="fld"><span>Confirm</span><input type="password" id="pwdConfirm"></label>
+    <div id="pwdMsg" class="muted" style="min-height:18px;color:#d94141;font-weight:600"></div>
+    <div class="modal-actions">
+      ${locked?`<button class="btn danger" id="pwdRemove">Remove</button>`:''}
+      <button class="btn ghost" data-close>Cancel</button>
+      <button class="btn ok" id="pwdSave">${locked?'Save':'Set'}</button>
+    </div>`;
+  openModal(html,box=>{
+    const msg=$('#pwdMsg',box);
+    async function verifyCurrent(){const cur=$('#pwdCurrent',box).value;const h=await hashPassword(cur,DB.lock.salt);return h===DB.lock.hash;}
+    $('#pwdSave',box).onclick=async()=>{msg.textContent='';
+      if(locked){if(!await verifyCurrent()){msg.textContent='Current password incorrect.';return;}}
+      const np=$('#pwdNew',box).value,nc=$('#pwdConfirm',box).value;
+      if(!np&&locked){closeModal();return;}
+      if(!np){msg.textContent='Enter a new password.';return;}
+      if(np.length<3){msg.textContent='At least 3 characters.';return;}
+      if(np!==nc){msg.textContent='Passwords do not match.';return;}
+      const salt=randomSalt();const hash=await hashPassword(np,salt);
+      DB.lock={enabled:true,hash,salt};saveDB();closeModal();toast('File password set.');};
+    if(locked){$('#pwdRemove',box).onclick=async()=>{msg.textContent='';
+      if(!await verifyCurrent()){msg.textContent='Current password incorrect.';return;}
+      if(!confirm('Remove the file password?'))return;
+      DB.lock={enabled:false,hash:'',salt:''};saveDB();closeModal();toast('File password removed.');};}
+    setTimeout(()=>{const f=locked?$('#pwdCurrent',box):$('#pwdNew',box);if(f)f.focus();},60);});
+}
+
+/* =====================================================================
+   USERS TAB (Master only)
+   ===================================================================== */
+function renderUserManagement(){
+  if(!DB.master)DB.master=defaultMaster();
+  if(!Array.isArray(DB.users))DB.users=[];
+  const masterIdEl=$('#masterId'),masterPassEl=$('#masterPass');
+  if(masterIdEl)masterIdEl.value=DB.master.id;
+  if(masterPassEl)masterPassEl.value=DB.master.password;
+
+  const tabWrap=$('#newUserTabs');
+  if(tabWrap){
+    tabWrap.innerHTML=TAB_DEFS.map(t=>`<label data-tabid="${t.id}"><input type="checkbox" value="${t.id}"> ${t.label}</label>`).join('');
+    tabWrap.querySelectorAll('label').forEach(l=>{
+      const cb=l.querySelector('input');
+      cb.addEventListener('change',()=>l.classList.toggle('on',cb.checked));});
+  }
+
+  const w=$('#usersList');
+  if(!w)return;
+  if(!DB.users.length){
+    w.innerHTML='<div class="muted">No users yet. Add one above.</div>';
+  }else{
+    let h=`<table class="users-table"><thead><tr>
+      <th style="width:160px;">Login ID</th>
+      <th style="width:180px;">Display Name</th>
+      <th>Allowed Tabs</th>
+      <th style="width:170px;text-align:right;">Actions</th>
+    </tr></thead><tbody>`;
+    DB.users.forEach(u=>{
+      const tabs=(u.tabs||[]).map(t=>{const def=TAB_DEFS.find(x=>x.id===t);return `<span class="t">${esc(def?def.label:t)}</span>`;}).join('');
+      h+=`<tr>
+        <td><b>${esc(u.id)}</b></td>
+        <td>${esc(u.displayName||'')}</td>
+        <td><div class="tabs-list-inline">${tabs||'<span class="muted">None</span>'}</div></td>
+        <td style="text-align:right;">
+          <button class="btn xs ghost" data-edituser="${esc(u.id)}">Edit</button>
+          <button class="btn xs danger" data-deluser="${esc(u.id)}">Delete</button>
+        </td>
+      </tr>`;});
+    h+='</tbody></table>';
+    w.innerHTML=h;
+  }
+
+  const d=DB.demo||{used:0,max:1};
+  const demoBox=$('#demoStateBox');
+  if(demoBox)demoBox.innerHTML=`
+    <span class="tag ${d.used>=d.max?'r':'g'}">${d.used} / ${d.max} demo generation(s) used</span>
+    <span class="muted" style="margin-left:8px;">${d.used>=d.max?'Demo trial is exhausted.':'Demo trial is available for one guest.'}</span>`;
+
+  bindUserManagementHandlers();
+}
+
+function bindUserManagementHandlers(){
+  const addBtn=$('#btnAddUser');
+  if(addBtn)addBtn.onclick=addNewUser;
+  const saveMasterBtn=$('#btnSaveMaster');
+  if(saveMasterBtn)saveMasterBtn.onclick=saveMasterAccount;
+  const resetDemoBtn=$('#btnResetDemo');
+  if(resetDemoBtn)resetDemoBtn.onclick=resetDemoCounter;
+}
+
+function addNewUser(){
+  const idEl=$('#newUserId'),nameEl=$('#newUserName'),passEl=$('#newUserPass'),msg=$('#addUserMsg');
+  if(!idEl||!msg)return;
+  const id=idEl.value.trim();
+  const name=nameEl.value.trim();
+  const pass=passEl.value;
+  const checked=$$('#newUserTabs input[type=checkbox]').filter(c=>c.checked);
+  const tabs=checked.map(c=>c.value);
+  msg.style.color='#d94141';msg.textContent='';
+  if(!id){msg.textContent='Enter a Login ID.';return;}
+  if(!pass){msg.textContent='Enter a Password.';return;}
+  if(id.toLowerCase()===String(DB.master.id).toLowerCase()){msg.textContent='This ID is reserved for the master.';return;}
+  if(DB.users.some(u=>u.id.toLowerCase()===id.toLowerCase())){msg.textContent='This Login ID already exists.';return;}
+  if(!tabs.length){msg.textContent='Select at least one tab to allow.';return;}
+  DB.users.push({id,password:pass,displayName:name||id,tabs});
+  saveDB();
+  msg.style.color='#0a9d5a';
+  msg.textContent=`✔ User "${id}" added successfully.`;
+  idEl.value='';nameEl.value='';passEl.value='';
+  $$('#newUserTabs input[type=checkbox]').forEach(c=>{c.checked=false;const l=c.closest('label');if(l)l.classList.remove('on');});
+  renderUserManagement();
+  toast('User "'+id+'" added.');
+}
+
+function saveMasterAccount(){
+  const id=$('#masterId').value.trim();
+  const pass=$('#masterPass').value;
+  const msg=$('#masterMsg');
+  msg.style.color='#d94141';
+  if(!id){msg.textContent='Master ID required.';return;}
+  if(!pass){msg.textContent='Master password required.';return;}
+  if(DB.users.some(u=>u.id.toLowerCase()===id.toLowerCase())){msg.textContent='A user already uses this ID.';return;}
+  DB.master={id,password:pass,displayName:DB.master.displayName||id};
+  saveDB();
+  msg.style.color='#0a9d5a';
+  msg.textContent='✔ Master account updated.';
+}
+
+function resetDemoCounter(){
+  if(!confirm('Reset the demo trial counter? The guest user will be able to generate one more paper.'))return;
+  DB.demo={used:0,max:1};saveDB();renderUserManagement();toast('Demo counter reset.');
+}
+
+$('#usersList').addEventListener('click',e=>{
+  const ed=e.target.closest('[data-edituser]');
+  if(ed){openEditUserModal(ed.dataset.edituser);return;}
+  const dl=e.target.closest('[data-deluser]');
+  if(dl){
+    const u=DB.users.find(x=>x.id===dl.dataset.deluser);if(!u)return;
+    if(!confirm(`Delete user "${u.id}"?`))return;
+    DB.users=DB.users.filter(x=>x.id!==u.id);
+    saveDB();renderUserManagement();toast('User deleted.');}});
+
+function openEditUserModal(userId){
+  const u=DB.users.find(x=>x.id===userId);if(!u)return;
+  const html=`<h2>Edit User: ${esc(u.id)}</h2>
+    <label class="fld"><span>Login ID</span><input type="text" id="edUserId" value="${esc(u.id)}"></label>
+    <label class="fld"><span>Display Name</span><input type="text" id="edUserName" value="${esc(u.displayName||'')}"></label>
+    <label class="fld"><span>Password</span><input type="text" id="edUserPass" value="${esc(u.password||'')}"></label>
+    <div style="margin:8px 0 6px;font-size:12px;font-weight:600;color:#374151">Allowed Tabs:</div>
+    <div class="user-tab-grid" id="edUserTabs">
+      ${TAB_DEFS.map(t=>`<label data-tabid="${t.id}" class="${(u.tabs||[]).includes(t.id)?'on':''}">
+        <input type="checkbox" value="${t.id}" ${(u.tabs||[]).includes(t.id)?'checked':''}> ${t.label}
+      </label>`).join('')}
+    </div>
+    <div id="edUserMsg" class="muted" style="color:#d94141;font-weight:600;min-height:18px;margin-top:8px"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" data-close>Cancel</button>
+      <button class="btn ok" id="edUserSave">Save Changes</button>
+    </div>`;
+  openModal(html,box=>{
+    box.querySelectorAll('#edUserTabs label').forEach(l=>{
+      const cb=l.querySelector('input');
+      cb.addEventListener('change',()=>l.classList.toggle('on',cb.checked));});
+    $('#edUserSave',box).onclick=()=>{
+      const nid=$('#edUserId',box).value.trim();
+      const nname=$('#edUserName',box).value.trim();
+      const npass=$('#edUserPass',box).value;
+      const ntabs=Array.from(box.querySelectorAll('#edUserTabs input:checked')).map(c=>c.value);
+      const msg=$('#edUserMsg',box);
+      if(!nid){msg.textContent='Login ID required.';return;}
+      if(!npass){msg.textContent='Password required.';return;}
+      if(nid.toLowerCase()===String(DB.master.id).toLowerCase()){msg.textContent='Reserved for master.';return;}
+      if(DB.users.some(x=>x.id!==userId&&x.id.toLowerCase()===nid.toLowerCase())){msg.textContent='Another user already has this ID.';return;}
+      if(!ntabs.length){msg.textContent='Select at least one tab.';return;}
+      const idx=DB.users.findIndex(x=>x.id===userId);
+      DB.users[idx]={id:nid,password:npass,displayName:nname||nid,tabs:ntabs};
+      saveDB();closeModal();renderUserManagement();toast('User updated.');};});
+}
+
+/* =====================================================================
+   TAB SWITCHING
+   ===================================================================== */
+function switchTab(name){
+  if(!name)return;
+  $$('#tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+  $$('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+name));
+  try{
+    if(name==='blueprint')renderBlueprint();
+    if(name==='saved')renderSavedList();
+    if(name==='bank'){renderBankSelects();renderBankList();}
+    if(name==='subjects')renderSubjectsTab();
+    if(name==='users')renderUserManagement();
+    if(name==='preview')renderPreview();
+  }catch(err){console.error('Tab render error:',err);}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+$('#tabs').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-tab]');
+  if(b&&!b.classList.contains('hide'))switchTab(b.dataset.tab);});
+
+/* =====================================================================
+   SUBJECTS
+   ===================================================================== */
+function getSubject(id){return DB.subjects.find(s=>s.id===id);}
+function chaptersOfSubject(id){return DB.chapters.filter(c=>c.subjectId===id);}
+function questionsOfSubject(id){return DB.questions.filter(q=>q.subjectId===id);}
+function ensureSubject(name){name=String(name||'').trim();if(!name)return null;
+  let s=DB.subjects.find(x=>x.name.toLowerCase()===name.toLowerCase());
+  if(!s){s={id:uid(),name};DB.subjects.push(s);saveDB();}return s;}
+function fillSubjectSelect(sel){if(!sel)return;const prev=sel.value;
+  sel.innerHTML=DB.subjects.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  if(prev&&Array.from(sel.options).some(o=>o.value===prev))sel.value=prev;}
+
+function renderSubjectsTab(){
+  const wrap=$('#subjectsList');if(!wrap)return;
+  if(!DB.subjects.length){wrap.innerHTML='<div class="card"><div class="muted">No subjects yet. Add one above.</div></div>';return;}
+  const filterSel=$('#subjectFilter');
+  const prevFilter=filterSel.value;
+  filterSel.innerHTML='<option value="">All Subjects</option>'+
+    DB.subjects.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  if(prevFilter&&Array.from(filterSel.options).some(o=>o.value===prevFilter))filterSel.value=prevFilter;
+  else filterSel.value='';
+  const filterNow=filterSel.value;
+  const list=filterNow?DB.subjects.filter(s=>s.id===filterNow):DB.subjects;
+  wrap.innerHTML=list.map(s=>{
+    const realIdx=DB.subjects.findIndex(x=>x.id===s.id);
+    const chs=chaptersOfSubject(s.id);
+    const qn=questionsOfSubject(s.id).length;
+    const isActive=s.id===DB.setup.subjectId;
+    const isFirst=realIdx===0;
+    const isLast=realIdx===DB.subjects.length-1;
+    let h=`<div class="subject-block">
+      <div class="subject-header">
+        <span style="font-size:18px;line-height:1;">📘</span>
+        <input type="text" class="subj-name-input" data-subname="${s.id}" value="${esc(s.name)}" placeholder="Subject name">
+        ${isActive?'<span class="badge">Active for paper</span>':`<button class="btn xs" data-setactive="${s.id}">Set as active</button>`}
+        <span class="tag g">${chs.length} chapter(s)</span>
+        <span class="tag o">${qn} question(s)</span>
+        <span style="flex:1"></span>
+        <button class="btn xs ghost" data-movesubup="${s.id}" ${isFirst?'disabled':''}>↑</button>
+        <button class="btn xs ghost" data-movesubdown="${s.id}" ${isLast?'disabled':''}>↓</button>
+        <button class="btn xs danger" data-delsub="${s.id}">Delete Subject</button>
+      </div>
+      <div class="subject-body">`;
+    h+=`<table class="chapters-table">
+      <thead><tr>
+        <th style="width:34px;">#</th>
+        <th>Chapter</th>
+        <th style="width:110px;text-align:center;">Questions</th>
+        <th style="width:200px;text-align:right;">Actions</th>
+      </tr></thead><tbody>`;
+    if(!chs.length){
+      h+=`<tr><td colspan="4" style="text-align:center;color:#6b7280;font-style:italic;padding:14px;">No chapters yet — add one below.</td></tr>`;
+    }else{
+      chs.forEach((c,i)=>{
+        const cqn=DB.questions.filter(q=>q.chapterId===c.id).length;
+        h+=`<tr>
+          <td style="color:#6b7280;">${i+1}</td>
+          <td style="font-weight:600;color:#1f2937;">${esc(c.name)}</td>
+          <td style="text-align:center;"><span class="tag o">${cqn}</span></td>
+          <td class="actions-cell">
+            <button class="btn xs ghost" data-renchap="${c.id}">✎ Rename</button>
+            <button class="btn xs danger" data-delchap="${c.id}">✕ Delete</button>
+          </td>
+        </tr>`;});
+    }
+    h+=`</tbody></table>`;
+    h+=`<div class="row" style="max-width:560px;align-items:flex-end;margin-top:10px;">
+      <input type="text" placeholder="New chapter name in ${esc(s.name)}" data-newchapfor="${s.id}">
+      <button class="btn sm" data-addchap="${s.id}" style="flex:0 0 auto">+ Add Chapter</button>
+    </div>`;
+    h+=`</div></div>`;
+    return h;}).join('');
+}
+$('#subjectFilter').addEventListener('change',renderSubjectsTab);
+$('#subjectsList').addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.subname){const s=getSubject(t.dataset.subname);if(s){s.name=t.value;saveDB();fillSubjectSelect($('#sSubject'));fillSubjectSelect($('#bankSubject'));}}});
+$('#subjectsList').addEventListener('click',e=>{
+  const t=e.target;
+  const delsub=t.closest('[data-delsub]');
+  if(delsub){
+    const s=getSubject(delsub.dataset.delsub);if(!s)return;
+    if(DB.subjects.length<=1){alert('At least one subject must exist.');return;}
+    if(!confirm(`Delete subject "${s.name}"?`))return;
+    const fallback=DB.subjects.find(x=>x.id!==s.id);
+    DB.chapters.forEach(c=>{if(c.subjectId===s.id)c.subjectId=fallback.id;});
+    DB.questions.forEach(q=>{if(q.subjectId===s.id)q.subjectId=fallback.id;});
+    DB.subjects=DB.subjects.filter(x=>x.id!==s.id);
+    if(DB.setup.subjectId===s.id)DB.setup.subjectId=fallback.id;
+    saveDB();renderAll();return;}
+  const setact=t.closest('[data-setactive]');
+  if(setact){DB.setup.subjectId=setact.dataset.setactive;saveDB();renderAll();return;}
+  const up=t.closest('[data-movesubup]');
+  if(up){const id=up.dataset.movesubup;const idx=DB.subjects.findIndex(s=>s.id===id);
+    if(idx>0){[DB.subjects[idx-1],DB.subjects[idx]]=[DB.subjects[idx],DB.subjects[idx-1]];saveDB();renderAll();toast('Subject moved up.');}return;}
+  const down=t.closest('[data-movesubdown]');
+  if(down){const id=down.dataset.movesubdown;const idx=DB.subjects.findIndex(s=>s.id===id);
+    if(idx>=0&&idx<DB.subjects.length-1){[DB.subjects[idx+1],DB.subjects[idx]]=[DB.subjects[idx],DB.subjects[idx+1]];saveDB();renderAll();toast('Subject moved down.');}return;}
+  const addchap=t.closest('[data-addchap]');
+  if(addchap){const subjId=addchap.dataset.addchap;
+    const inp=document.querySelector(`[data-newchapfor="${subjId}"]`);
+    const name=(inp.value||'').trim();if(!name){alert('Type a chapter name.');return;}
+    addChapter(subjId,name);inp.value='';renderAll();return;}
+  const renchap=t.closest('[data-renchap]');
+  if(renchap){const c=DB.chapters.find(x=>x.id===renchap.dataset.renchap);if(!c)return;
+    const v=prompt('Rename chapter:',c.name);if(v&&v.trim()){c.name=v.trim();saveDB();renderAll();}return;}
+  const delchap=t.closest('[data-delchap]');
+  if(delchap){const c=DB.chapters.find(x=>x.id===delchap.dataset.delchap);if(!c)return;
+    const qn=DB.questions.filter(q=>q.chapterId===c.id).length;
+    if(!confirm(`Delete chapter "${c.name}"?${qn?` (${qn} question(s) become unassigned)`:''}`))return;
+    DB.chapters=DB.chapters.filter(x=>x.id!==c.id);
+    DB.questions.forEach(q=>{if(q.chapterId===c.id)q.chapterId='';});
+    DB.setup.sections.forEach(sec=>{if(sec.counts)delete sec.counts[c.id];});
+    saveDB();renderAll();return;}});
+$('#btnAddSubject').onclick=()=>{
+  const inp=$('#newSubjectName');const name=(inp.value||'').trim();
+  if(!name){alert('Type a subject name.');return;}
+  const s=ensureSubject(name);inp.value='';
+  if(s){DB.setup.subjectId=s.id;saveDB();renderAll();}};
+$('#btnQuickAddSubject').onclick=()=>{
+  const name=prompt('New subject name:');if(!name||!name.trim())return;
+  const s=ensureSubject(name.trim());if(s){DB.setup.subjectId=s.id;saveDB();renderAll();}};
+$('#btnGoSubjects').onclick=()=>switchTab('subjects');
+
+/* =====================================================================
+   MARKS
+   ===================================================================== */
+function renderMarksChips(){const w=$('#marksChips');if(!w)return;
+  w.innerHTML=marksList().map(m=>`<span class="mark-chip">${m} mark${m>1?'s':''}<button data-delmark="${m}">×</button></span>`).join('');}
+$('#marksChips')?.addEventListener('click',e=>{
+  const d=e.target.closest('[data-delmark]');if(!d)return;
+  const m=+d.dataset.delmark;
+  if(marksList().length<=1){alert('At least one mark value required.');return;}
+  if(!confirm(`Remove ${m}-mark?`))return;
+  DB.setup.marks=marksList().filter(x=>x!==m);
+  saveDB();renderMarksChips();renderSections();refreshMarkDropdowns();renderPreview();});
+$('#btnAddMark').onclick=()=>{
+  const inp=$('#newMarkValue');const v=parseInt(inp.value,10);
+  if(!v||v<=0){alert('Positive number.');return;}
+  const marks=marksList();if(marks.includes(v)){alert('Already exists.');return;}
+  marks.push(v);marks.sort((a,b)=>a-b);DB.setup.marks=marks;
+  saveDB();inp.value='';renderMarksChips();renderSections();refreshMarkDropdowns();renderPreview();};
+$('#btnResetMarks').onclick=()=>{
+  if(!confirm('Reset to 1, 3, 4, 6?'))return;
+  DB.setup.marks=[1,3,4,6];saveDB();renderMarksChips();renderSections();refreshMarkDropdowns();renderPreview();};
+function refreshMarkDropdowns(){
+  const ML=marksList();
+  const qm=$('#qMarks');
+  if(qm){const prev=qm.value;qm.innerHTML=ML.map(m=>`<option value="${m}">${m} Mark${m>1?'s':''}</option>`).join('');if(prev&&Array.from(qm.options).some(o=>o.value===prev))qm.value=prev;}
+  const bm=$('#bulkMarks');
+  if(bm){const prev=bm.value;bm.innerHTML=ML.map(m=>`<option value="${m}">${m}</option>`).join('');if(prev&&Array.from(bm.options).some(o=>o.value===prev))bm.value=prev;}
+  const fm=$('#fMarks');
+  if(fm){const prev=fm.value;fm.innerHTML='<option value="">All</option>'+ML.map(m=>`<option value="${m}">${m}</option>`).join('');if(prev&&Array.from(fm.options).some(o=>o.value===prev))fm.value=prev;}}
+
+/* =====================================================================
+   SETUP TAB
+   ===================================================================== */
+function renderSetup(){
+  const s=DB.setup;
+  fillSubjectSelect($('#sSubject'));$('#sSubject').value=s.subjectId||'';
+  $('#sSchool').value=s.school||'';$('#sExam').value=s.exam||'';
+  $('#sDate').value=s.date||'';$('#sTime').value=s.time||'';
+  $('#sFooter').value=s.footer||'';$('#sShowPageNumbers').checked=s.showPageNumbers!==false;
+  $('#sEnd').value=s.endMessage||'';
+  $('#logoLPrev').innerHTML=s.logoL.src?`<img src="${s.logoL.src}">`:'<span class="ph">No logo</span>';
+  $('#logoRPrev').innerHTML=s.logoR.src?`<img src="${s.logoR.src}">`:'<span class="ph">No logo</span>';
+  $('#logoLW').value=s.logoL.w;$('#logoLH').value=s.logoL.h;
+  $('#logoRW').value=s.logoR.w;$('#logoRH').value=s.logoR.h;
+  $$('input[name=wmMode]').forEach(r=>r.checked=(r.value===s.wm.mode));
+  $('#wmText').value=s.wm.text||'';$('#wmColor').value=s.wm.color||'#999999';
+  $('#wmOpacity').value=s.wm.opacity;$('#wmSize').value=s.wm.size;
+  $('#wmImagePrev').innerHTML=s.wm.src?`<img src="${s.wm.src}">`:'<span class="ph">No image</span>';
+  toggleWmPanels();
+  $$('input[name=instrMode]').forEach(c=>c.checked=(c.value===s.instr.mode));
+  $('#instrText').value=s.instr.text||'';toggleInstrPanel();
+  renderMarksChips();refreshMarkDropdowns();renderChapterList();renderSections();}
+$('#sSubject').addEventListener('change',e=>{DB.setup.subjectId=e.target.value;saveDB();renderChapterList();renderSections();renderBankSelects();renderBankList();renderPreview();});
+[['#sSchool','school'],['#sExam','exam'],['#sDate','date'],['#sTime','time']].forEach(([sel,key])=>{
+  $(sel).addEventListener('input',()=>{DB.setup[key]=$(sel).value;saveDB();});});
+$('#sFooter').addEventListener('input',e=>{DB.setup.footer=e.target.value;saveDB();renderPreview();});
+$('#sEnd').addEventListener('input',e=>{DB.setup.endMessage=e.target.value;saveDB();});
+$('#sShowPageNumbers').addEventListener('change',e=>{DB.setup.showPageNumbers=e.target.checked;saveDB();renderPreview();});
+$('#logoLFile').addEventListener('change',e=>readFile(e.target,d=>{DB.setup.logoL.src=d;saveDB();renderSetup();renderPreview();}));
+$('#logoRFile').addEventListener('change',e=>readFile(e.target,d=>{DB.setup.logoR.src=d;saveDB();renderSetup();renderPreview();}));
+$('#logoLClr').onclick=()=>{DB.setup.logoL.src='';saveDB();renderSetup();renderPreview();};
+$('#logoRClr').onclick=()=>{DB.setup.logoR.src='';saveDB();renderSetup();renderPreview();};
+$('#logoLW').addEventListener('input',e=>{DB.setup.logoL.w=+e.target.value||1;saveDB();renderPreview();});
+$('#logoLH').addEventListener('input',e=>{DB.setup.logoL.h=+e.target.value||1;saveDB();renderPreview();});
+$('#logoRW').addEventListener('input',e=>{DB.setup.logoR.w=+e.target.value||1;saveDB();renderPreview();});
+$('#logoRH').addEventListener('input',e=>{DB.setup.logoR.h=+e.target.value||1;saveDB();renderPreview();});
+$$('input[name=wmMode]').forEach(r=>r.addEventListener('change',()=>{DB.setup.wm.mode=r.value;saveDB();toggleWmPanels();renderPreview();}));
+function toggleWmPanels(){
+  $('#wmTextPanel').style.display=DB.setup.wm.mode==='text'?'':'none';
+  $('#wmImagePanel').style.display=DB.setup.wm.mode==='image'?'':'none';}
+$('#wmText').addEventListener('input',e=>{DB.setup.wm.text=e.target.value;saveDB();renderPreview();});
+$('#wmColor').addEventListener('input',e=>{DB.setup.wm.color=e.target.value;saveDB();renderPreview();});
+$('#wmOpacity').addEventListener('input',e=>{DB.setup.wm.opacity=Math.max(0.02,Math.min(1,+e.target.value||0.1));saveDB();renderPreview();});
+$('#wmSize').addEventListener('input',e=>{DB.setup.wm.size=+e.target.value||70;saveDB();renderPreview();});
+$('#wmImageFile').addEventListener('change',e=>readFile(e.target,d=>{
+  DB.setup.wm.src=d;DB.setup.wm.mode='image';
+  $$('input[name=wmMode]').forEach(r=>r.checked=(r.value==='image'));
+  saveDB();renderSetup();renderPreview();}));
+$('#wmImageClr').onclick=()=>{DB.setup.wm.src='';saveDB();renderSetup();renderPreview();};
+$$('input[name=instrMode]').forEach(c=>c.addEventListener('change',()=>{
+  if(c.checked){$$('input[name=instrMode]').forEach(o=>{if(o!==c)o.checked=false;});DB.setup.instr.mode=c.value;}
+  else DB.setup.instr.mode='none';
+  saveDB();toggleInstrPanel();renderPreview();}));
+function toggleInstrPanel(){$('#instrTextPanel').style.display=DB.setup.instr.mode==='custom'?'':'none';}
+$('#instrText').addEventListener('input',e=>{DB.setup.instr.text=e.target.value;saveDB();renderPreview();});
+
+function addChapter(subjId,name){
+  name=(name||'').trim();if(!name)return null;
+  const ex=DB.chapters.find(c=>c.subjectId===subjId&&c.name.toLowerCase()===name.toLowerCase());
+  if(ex)return ex;
+  const c={id:uid(),subjectId:subjId,name};DB.chapters.push(c);saveDB();return c;}
+function chapterName(id){const c=DB.chapters.find(x=>x.id===id);return c?c.name:'—';}
+function renderChapterList(){
+  const w=$('#chapterList');if(!w)return;
+  const list=chaptersOfSubject(DB.setup.subjectId);
+  if(!list.length){w.innerHTML='<span class="muted">No chapters.</span>';return;}
+  w.innerHTML=list.map(c=>{
+    const qn=DB.questions.filter(q=>q.chapterId===c.id).length;
+    return `<span class="chip"><span class="ch-name" data-chid="${c.id}" style="cursor:pointer">${esc(c.name)}</span><span style="background:#e8f7ee;color:#0a7a45;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700">${qn}</span><button data-delch="${c.id}">×</button></span>`;}).join('');}
+document.addEventListener('click',e=>{
+  const d=e.target.closest('[data-delch]');
+  if(d&&d.closest('#chapterList')){
+    const id=d.dataset.delch;const c=DB.chapters.find(x=>x.id===id);if(!c)return;
+    const qn=DB.questions.filter(q=>q.chapterId===id).length;
+    if(!confirm(`Delete chapter "${c.name}"?${qn?` (${qn} question(s) unassigned)`:''}`))return;
+    DB.chapters=DB.chapters.filter(x=>x.id!==id);
+    DB.questions.forEach(q=>{if(q.chapterId===id)q.chapterId='';});
+    DB.setup.sections.forEach(sec=>{if(sec.counts)delete sec.counts[id];});
+    saveDB();renderAll();return;}
+  const n=e.target.closest('.ch-name');
+  if(n&&n.closest('#chapterList')){
+    const c=DB.chapters.find(x=>x.id===n.dataset.chid);if(!c)return;
+    const v=prompt('Rename:',c.name);if(v&&v.trim()){c.name=v.trim();saveDB();renderAll();}}});
+$('#btnAddChapter').onclick=()=>{
+  const inp=$('#newChapterName');const name=(inp.value||'').trim();
+  if(!name){alert('Type a chapter name.');return;}
+  addChapter(DB.setup.subjectId,name);inp.value='';renderAll();};
+
+function secCounts(sec,chId){sec.counts=sec.counts||{};sec.counts[chId]=sec.counts[chId]||{};return sec.counts[chId];}
+function totalsFor(sec,chId){const c=(sec.counts&&sec.counts[chId])||{};let q=0,m=0;
+  marksList().forEach(k=>{const n=+c[k]||0;q+=n;m+=n*k;});return{q,m};}
+function sectionTotals(sec){let q=0,m=0;const byMark={};marksList().forEach(k=>{byMark[k]=0;});
+  chaptersOfSubject(DB.setup.subjectId).forEach(ch=>{
+    const t=totalsFor(sec,ch.id);q+=t.q;m+=t.m;
+    marksList().forEach(k=>{byMark[k]+=(+((sec.counts&&sec.counts[ch.id]&&sec.counts[ch.id][k])||0));});});
+  return{q,m,byMark};}
+function renderSections(){
+  const wrap=$('#sectionsWrap');wrap.innerHTML='';
+  const chList=chaptersOfSubject(DB.setup.subjectId);const ML=marksList();
+  DB.setup.sections.forEach((sec,si)=>{
+    const block=document.createElement('div');block.className='sec-block';
+    let h=`<div class="sec-head">
+      <input class="sec-name" data-si="${si}" value="${esc(sec.name)}" placeholder="Section name">
+      <input class="sec-desc" data-si="${si}" value="${esc(sec.desc||'')}" placeholder="Note (optional)">
+      <button class="btn danger sm" data-delsec="${si}" ${DB.setup.sections.length<2?'disabled':''}>Delete</button>
+    </div>`;
+    h+=`<div class="tscroll"><table class="grid-table"><thead><tr><th>Chapter</th>`+
+       ML.map(m=>`<th>${m} Mark${m>1?'s':''}</th>`).join('')+`<th>Qs</th><th>Marks</th></tr></thead><tbody>`;
+    if(!chList.length)h+=`<tr><td colspan="${ML.length+3}" class="muted" style="text-align:center">Add chapters first.</td></tr>`;
+    chList.forEach(ch=>{
+      const c=secCounts(sec,ch.id);const t=totalsFor(sec,ch.id);
+      h+=`<tr><td>${esc(ch.name)}</td>`;
+      ML.forEach(m=>{h+=`<td><input type="number" min="0" step="1" class="cnt" data-si="${si}" data-ch="${ch.id}" data-m="${m}" value="${+c[m]||0}"></td>`;});
+      h+=`<td class="ro tq">${t.q}</td><td class="ro tm">${t.m}</td></tr>`;});
+    const T=sectionTotals(sec);
+    h+=`<tr class="totrow"><td>Total</td>`+ML.map(m=>`<td>${T.byMark[m]||0}</td>`).join('')+`<td>${T.q}</td><td>${T.m}</td></tr>`;
+    h+=`</tbody></table></div>`;
+    block.innerHTML=h;wrap.appendChild(block);});}
+$('#sectionsWrap').addEventListener('input',e=>{
+  const t=e.target;
+  if(t.classList.contains('cnt')){
+    const si=+t.dataset.si,chId=t.dataset.ch,m=t.dataset.m;
+    const sec=DB.setup.sections[si];
+    secCounts(sec,chId)[m]=Math.max(0,parseInt(t.value,10)||0);
+    saveDB();
+    const tr=t.closest('tr');const tot=totalsFor(sec,chId);
+    const tq=tr.querySelector('.tq'),tm=tr.querySelector('.tm');
+    if(tq)tq.textContent=tot.q;if(tm)tm.textContent=tot.m;
+    const T=sectionTotals(sec);const totRow=tr.parentNode.querySelector('.totrow');
+    if(totRow){const cells=totRow.querySelectorAll('td');
+      marksList().forEach((k,i)=>{cells[i+1].textContent=T.byMark[k]||0;});
+      cells[marksList().length+1].textContent=T.q;cells[marksList().length+2].textContent=T.m;}
+  }else if(t.classList.contains('sec-name')){DB.setup.sections[+t.dataset.si].name=t.value;saveDB();}
+  else if(t.classList.contains('sec-desc')){DB.setup.sections[+t.dataset.si].desc=t.value;saveDB();}});
+$('#sectionsWrap').addEventListener('click',e=>{
+  const d=e.target.closest('[data-delsec]');
+  if(d&&DB.setup.sections.length>1){
+    if(!confirm('Delete this section?'))return;
+    DB.setup.sections.splice(+d.dataset.delsec,1);saveDB();renderSections();}});
+$('#btnAddSection').onclick=()=>{
+  const n=DB.setup.sections.length;
+  DB.setup.sections.push({id:uid(),name:'Section '+String.fromCharCode(65+n),desc:'',counts:{}});
+  saveDB();renderSections();};
+
+function fillChapterSelect(sel,includeAll,chapterList){
+  if(!sel)return;const prev=sel.value;
+  const list=chapterList||DB.chapters;
+  sel.innerHTML=(includeAll?'<option value="">All chapters</option>':'')+list.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  if(prev&&Array.from(sel.options).some(o=>o.value===prev))sel.value=prev;}
+function renderBankSelects(){
+  fillSubjectSelect($('#bankSubject'));
+  if(!$('#bankSubject').value)$('#bankSubject').value=DB.setup.subjectId||'';
+  const subjId=$('#bankSubject').value;const chList=chaptersOfSubject(subjId);
+  fillChapterSelect($('#bulkChapter'),false,chList);
+  fillChapterSelect($('#qChapter'),false,chList);
+  fillChapterSelect($('#fChapter'),true,chList);
+  refreshMarkDropdowns();
+  $('#bankCount').textContent=questionsOfSubject(subjId).length;}
+$('#bankSubject').addEventListener('change',()=>{renderBankSelects();renderBankList();});
+
+function parseBulkText(text,def){
+  const lines=String(text||'').split(/\r?\n/);
+  const out=[];let cur=null;
+  let chapter=def.chapterName||'',marks=def.marks||marksList()[0]||1,type=def.type||'RU',format='';
+  let mode=null,prevEndedWithQ=false;
+  function startQ(txt){if(cur)out.push(cur);
+    cur={chapter,marks,type,format,text:(txt||'').trim(),options:[],correct:0,answer:'',tfAnswer:''};
+    mode='q';prevEndedWithQ=/\?\s*$/.test((txt||'').trim());}
+  function ensureCur(){if(!cur)startQ('');return cur;}
+  const isAnsMarker=s=>/^(?:ans|answer|solution|sol)\s*[\).:\-]/i.test(s);
+  const nextNonBlank=from=>{for(let j=from;j<lines.length;j++){if(lines[j].trim())return lines[j].trim();}return '';};
+  for(let i=0;i<lines.length;i++){
+    const raw=lines[i];const line=raw.trim();
+    if(!line){if(mode==='a')mode=null;else if(mode==='q'&&cur&&(cur.answer||cur.options.length))mode=null;continue;}
+    let m;
+    if((m=line.match(/^[\[\(]?\s*#{0,3}\s*chapter\s*[:\-]\s*(.+?)\s*[\]\)]?$/i))){chapter=m[1].trim();if(cur)cur.chapter=chapter;mode=null;continue;}
+    if((m=line.match(/^[\[\(]?\s*#{0,3}\s*marks?\s*[:\-]\s*(\d+)/i))){marks=+m[1];if(cur)cur.marks=marks;mode=null;continue;}
+    if((m=line.match(/^[\[\(]?\s*#{0,3}\s*type\s*[:\-]\s*([A-Za-z]+)/i))){type=normType(m[1]);if(cur)cur.type=type;mode=null;continue;}
+    if((m=line.match(/^[\[\(]?\s*#{0,3}\s*(?:format|qtype|question\s*format)\s*[:\-]\s*(.+?)\s*[\]\)]?$/i))){const f=normFormat(m[1]);if(f){format=f;if(cur)cur.format=f;}mode=null;continue;}
+    if(isAnsMarker(line)){const c=ensureCur();c.answer=line.replace(/^(?:ans|answer|solution|sol)\s*[\).:\-]\s*/i,'');mode='a';prevEndedWithQ=false;continue;}
+    if(cur){
+      const opt=stripOptionMarker(line);
+      if(opt&&opt.text){
+        const letters='abcdefgh';
+        const expectedLetter=letters[cur.options.length],expectedNumber=String(cur.options.length+1);
+        const matchesExpected=(opt.letter===expectedLetter)||(opt.letter===expectedNumber);
+        const isOptionContext=mode==='o'||cur.options.length>0||cur.marks===1||cur.format==='mcq';
+        if(isOptionContext||matchesExpected){
+          let txt=opt.text,correct=false;
+          if(/\*+\s*$/.test(txt)){correct=true;txt=txt.replace(/\*+\s*$/,'').trim();}
+          cur.options.push(txt);if(correct)cur.correct=cur.options.length-1;
+          if(!cur.format)cur.format='mcq';mode='o';continue;}}}
+    if((m=line.match(/^(?:Q(?:uestion|ues|ue|u)?)?\s*\.?\s*(\d+)\s*[\).:\-]\s*(.*)$/i))&&!/^[\(\[]/.test(line)){
+      let txt=m[2]||'';const mm=txt.match(/[\[\(]\s*(\d+)\s*marks?\s*[\]\)]/i);
+      if(mm){txt=txt.replace(mm[0],'').trim();marks=+mm[1];}
+      startQ(txt);cur.marks=marks;cur.type=type;cur.chapter=chapter;cur.format=format;continue;}
+    if((m=line.match(/^Q\s*[\).:\-]\s*(.*)$/i))){startQ(m[1]||'');cur.marks=marks;cur.type=type;cur.chapter=chapter;cur.format=format;continue;}
+    if(mode==='a'&&cur){const next=nextNonBlank(i+1);
+      if(isAnsMarker(next)||/\?\s*$/.test(line)){startQ(line);cur.marks=marks;cur.type=type;cur.chapter=chapter;cur.format=format;continue;}}
+    if(mode==='q'&&cur&&prevEndedWithQ&&/\?\s*$/.test(line)){startQ(line);cur.marks=marks;cur.type=type;cur.chapter=chapter;cur.format=format;continue;}
+    if(mode===null&&cur){startQ(line);cur.marks=marks;cur.type=type;cur.chapter=chapter;cur.format=format;continue;}
+    const c=ensureCur();
+    if(mode==='a')c.answer+=(c.answer?'\n':'')+line;
+    else if(mode==='o'&&c.options.length)c.options[c.options.length-1]+=' '+line;
+    else{c.text+=(c.text?'\n':'')+line;prevEndedWithQ=/\?\s*$/.test(line);}}
+  if(cur)out.push(cur);
+  out.forEach(q=>{
+    if(!q.format){if(q.options.length>=2)q.format='mcq';else if(/^\s*(true|false)\s*$/i.test(q.answer||''))q.format='tf';else q.format='desc';}
+    if(q.format==='mcq'&&q.options.length===2){
+      const lc=q.options.map(o=>o.toLowerCase().trim());
+      if(lc.includes('true')&&lc.includes('false')){
+        q.format='tf';const trueIdx=lc.indexOf('true'),falseIdx=lc.indexOf('false');
+        if(q.correct===falseIdx)q.tfAnswer='False';else if(q.correct===trueIdx)q.tfAnswer='True';
+        if(/^false$/i.test((q.answer||'').trim()))q.tfAnswer='False';
+        if(/^true$/i.test((q.answer||'').trim()))q.tfAnswer='True';
+        q.options=[];}}
+    if(q.format==='tf'){if(!q.tfAnswer)q.tfAnswer=/^false\s*$/i.test((q.answer||'').trim())?'False':'True';if(!q.answer)q.answer=q.tfAnswer;}
+    if(q.format==='mcq'&&q.options.length>=2&&q.answer){const d=detectCorrectOption(q.options,q.answer);if(d>=0)q.correct=d;}});
+  return out.filter(x=>(x.text||'').trim()||(x.answer||'').trim());}
+let bulkParsed=[];
+$('#btnParseBulk').onclick=()=>{
+  const ML=marksList();
+  const def={chapterName:($('#bulkChapter').selectedOptions[0]||{}).text||'',marks:+$('#bulkMarks').value||ML[0]||1,type:$('#bulkType').value||'RU'};
+  bulkParsed=parseBulkText($('#bulkText').value,def);renderBulkResult();};
+$('#btnAddBulk').onclick=()=>{
+  if(!bulkParsed.length){alert('Click Parse first.');return;}
+  const subjId=$('#bankSubject').value;if(!subjId){alert('Select a subject.');return;}
+  let added=0;
+  bulkParsed.forEach(it=>{
+    const ch=addChapter(subjId,it.chapter||'General');
+    const fmt=it.format||'desc';
+    DB.questions.push({id:uid(),subjectId:subjId,chapterId:ch?ch.id:'',marks:it.marks||1,type:it.type||'RU',format:fmt,
+      tfAnswer:fmt==='tf'?(it.tfAnswer||'True'):'',text:it.text||'',image:'',imgW:3,imgH:2,
+      options:fmt==='mcq'?(it.options||[]):[],correct:it.correct||0,table:null,
+      answer:it.answer||(fmt==='tf'?(it.tfAnswer||'True'):''),answerImage:''});
+    added++;});
+  saveDB();bulkParsed=[];$('#bulkText').value='';
+  $('#bulkResult').innerHTML=`<div class="badge">✔ ${added} questions added.</div>`;
+  renderAll();alert(added+' questions added.');};
+function renderBulkResult(){
+  const w=$('#bulkResult');
+  if(!bulkParsed.length){w.innerHTML='<div class="muted">Nothing detected.</div>';return;}
+  let h=`<div class="badge" style="margin-bottom:8px">Detected ${bulkParsed.length}</div>`;
+  bulkParsed.slice(0,60).forEach((q,i)=>{
+    const fmt=q.format||'desc';
+    h+=`<div class="list-item"><div class="li-head"><span class="tag">${i+1}</span><span class="tag g">${esc(q.chapter||'General')}</span><span class="tag o">${q.marks} mark</span><span class="tag r">${TYPE_SHORT[q.type]||'RU'}</span><span class="tag p">${FORMAT_SHORT[fmt]}</span></div><div class="li-body">${nl2br(q.text)}`;
+    if(fmt==='mcq'&&q.options.length)h+='<div style="margin-top:5px">'+q.options.map((o,j)=>`<div>(${'abcdefgh'[j]}) ${esc(o)} ${j===q.correct?' ✔':''}</div>`).join('')+'</div>';
+    if(fmt==='tf')h+=`<div style="margin-top:5px">(a) True (b) False → <b>${esc(q.tfAnswer||'True')}</b></div>`;
+    if(q.answer)h+=`<div style="margin-top:5px;color:#0a7a45"><b>Ans:</b> ${nl2br(q.answer)}</div>`;
+    h+='</div></div>';});
+  w.innerHTML=h;}
+
+let editingId=null,optValues=[],tblState={widths:[25,25,25,25],rows:[['','','',''],['','','','']]},qImgData='',qAnsImgData='';
+function renderOptList(){
+  const w=$('#optList');const letters='abcdefgh';
+  w.innerHTML=optValues.map((o,i)=>`<div class="opt-row"><input type="radio" name="correctOpt" value="${i}" ${i===0?'checked':''}><span class="opt-letter">(${letters[i]||(i+1)})</span><input type="text" class="opt-input" data-i="${i}" value="${esc(o)}"><button class="btn xs danger" data-delopt="${i}">✕</button></div>`).join('');}
+$('#optList').addEventListener('input',e=>{if(e.target.classList.contains('opt-input'))optValues[+e.target.dataset.i]=e.target.value;});
+$('#optList').addEventListener('click',e=>{const d=e.target.closest('[data-delopt]');if(d){optValues.splice(+d.dataset.delopt,1);renderOptList();}});
+$('#btnAddOpt').onclick=()=>{optValues.push('');renderOptList();};
+const FMT_NOTE={desc:'Students write the answer.',mcq:'Click the circle for the correct answer.',tf:'Prints as (a) True (b) False.'};
+function applyFormat(){
+  const f=$('#qFormat').value;
+  $('#optBlock').style.display=f==='mcq'?'':'none';
+  $('#tfBlock').style.display=f==='tf'?'':'none';
+  $('#fmtNote').textContent=FMT_NOTE[f]||'';
+  if(f==='mcq'&&!optValues.length){optValues=['','','',''];renderOptList();}}
+$('#qFormat').addEventListener('change',applyFormat);
+function renderTableEditor(){
+  const cw=$('#colWidths');
+  cw.innerHTML=tblState.widths.map((w,i)=>`<label>Col ${i+1} <input type="number" min="5" max="90" value="${w}" data-cw="${i}">%</label>`).join('');
+  const w=$('#tblWrap');
+  let h='<table class="tbl-edit"><colgroup>'+tblState.widths.map(x=>`<col style="width:${x}%">`).join('')+'</colgroup>';
+  tblState.rows.forEach((r,ri)=>{h+='<tr>'+r.map((c,ci)=>`<td contenteditable="true" data-r="${ri}" data-c="${ci}">${esc(c)}</td>`).join('')+'</tr>';});
+  h+='</table>';w.innerHTML=h;}
+$('#colWidths').addEventListener('input',e=>{if(e.target.dataset.cw!=null){tblState.widths[+e.target.dataset.cw]=Math.max(5,Math.min(90,+e.target.value||10));renderTableEditor();}});
+$('#tblWrap').addEventListener('input',e=>{const td=e.target.closest('td[contenteditable]');if(td)tblState.rows[+td.dataset.r][+td.dataset.c]=td.textContent;});
+document.querySelector('.tbl-tools').addEventListener('click',e=>{
+  const b=e.target.closest('[data-tbl]');if(!b)return;
+  const act=b.dataset.tbl,cols=tblState.widths.length;
+  if(act==='addrow')tblState.rows.push(new Array(cols).fill(''));
+  if(act==='delrow'&&tblState.rows.length>1)tblState.rows.pop();
+  if(act==='addcol'){tblState.widths.push(20);tblState.rows.forEach(r=>r.push(''));normalizeWidths();}
+  if(act==='delcol'&&cols>1){tblState.widths.pop();tblState.rows.forEach(r=>r.pop());normalizeWidths();}
+  if(act==='normalize')normalizeWidths();
+  if(act==='clear')tblState={widths:[25,25,25,25],rows:[['','','',''],['','','','']]};
+  renderTableEditor();});
+function normalizeWidths(){const n=tblState.widths.length||1;const eq=Math.floor(100/n);tblState.widths=tblState.widths.map((_,i)=>i===n-1?100-eq*(n-1):eq);}
+$('#qImage').addEventListener('change',e=>readFile(e.target,d=>{qImgData=d;$('#qImgPrev').innerHTML=`<img src="${d}" style="width:${$('#qImgW').value}in;height:${$('#qImgH').value}in;object-fit:contain;border:1px solid #ddd">`;}));
+$('#qImgClr').onclick=()=>{qImgData='';$('#qImage').value='';$('#qImgPrev').innerHTML='';};
+$('#qAnsImage').addEventListener('change',e=>readFile(e.target,d=>{qAnsImgData=d;$('#qAnsImgPrev').innerHTML=`<img src="${d}" style="max-width:3in;border:1px solid #ddd">`;}));
+$('#qAnsImgClr').onclick=()=>{qAnsImgData='';$('#qAnsImage').value='';$('#qAnsImgPrev').innerHTML='';};
+function setQImg(d){qImgData=d;$('#qImgPrev').innerHTML=`<img src="${d}" style="width:${$('#qImgW').value}in;height:${$('#qImgH').value}in;object-fit:contain;border:1px solid #ddd">`;}
+function setAnsImg(d){qAnsImgData=d;$('#qAnsImgPrev').innerHTML=`<img src="${d}" style="max-width:3in;border:1px solid #ddd">`;}
+async function readClipboardImage(){
+  try{const items=await navigator.clipboard.read();
+    for(const item of items){for(const type of item.types){if(type.startsWith('image/')){const blob=await item.getType(type);return await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(blob);});}}}
+    return null;
+  }catch(e){return null;}}
+$('#qImgPaste').onclick=async()=>{const d=await readClipboardImage();if(d)setQImg(d);else alert('Copy an image and try again.');};
+$('#qAnsImgPaste').onclick=async()=>{const d=await readClipboardImage();if(d)setAnsImg(d);else alert('Copy an image and try again.');};
+let lastPasteTarget='q';
+document.addEventListener('focusin',e=>{
+  if(e.target.closest('#qAnsImgPrev')||e.target.closest('#qAnsImage')||e.target.closest('#qAnsImgPaste')||e.target.id==='qAnswer')lastPasteTarget='ans';
+  else if(e.target.closest('#qImgPrev')||e.target.closest('#qImage')||e.target.closest('#qImgPaste')||e.target.id==='qText')lastPasteTarget='q';});
+document.addEventListener('paste',e=>{
+  const panel=$('#sub-add');if(!panel||!panel.classList.contains('active'))return;
+  const cd=e.clipboardData;if(!cd)return;
+  if(cd.getData('text/plain'))return;
+  const items=cd.items;if(!items)return;
+  for(const item of items){
+    if(item.type&&item.type.startsWith('image/')){
+      const blob=item.getAsFile();if(!blob)continue;
+      const r=new FileReader();
+      r.onload=ev=>{if(lastPasteTarget==='ans')setAnsImg(ev.target.result);else setQImg(ev.target.result);};
+      r.readAsDataURL(blob);e.preventDefault();return;}}});
+$('#btnResetQ').onclick=()=>resetQForm();
+function resetQForm(){
+  editingId=null;
+  $('#qText').value='';$('#qAnswer').value='';
+  $('#qMarks').value=String(marksList()[0]||1);$('#qType').value='RU';$('#qFormat').value='desc';
+  applyFormat();optValues=['','','',''];renderOptList();$('#tfAnswer').value='True';
+  qImgData='';qAnsImgData='';$('#qImage').value='';$('#qAnsImage').value='';
+  $('#qImgPrev').innerHTML='';$('#qAnsImgPrev').innerHTML='';
+  $('#qImgW').value=3;$('#qImgH').value=2;
+  tblState={widths:[25,25,25,25],rows:[['','','',''],['','','','']]};renderTableEditor();
+  $('#btnSaveQ').textContent='💾 Save';$('#addQStatus').textContent='';}
+$('#btnSaveQ').onclick=()=>{
+  const subjId=$('#bankSubject').value||DB.setup.subjectId;const chId=$('#qChapter').value;
+  if(!subjId){alert('Select a subject.');return;}if(!chId){alert('Select a chapter.');return;}
+  const text=$('#qText').value.trim(),answer=$('#qAnswer').value.trim();
+  const marks=+$('#qMarks').value,fmt=$('#qFormat').value||'desc';
+  let opts=[],correct=0,tfAnswer='';
+  if(fmt==='mcq'){
+    opts=optValues.map(o=>{const s=stripOptionMarker(o);return(s?s.text:o).trim();}).filter(Boolean);
+    if(opts.length<2){alert('At least two options needed.');return;}
+    const cEl=document.querySelector('input[name=correctOpt]:checked');correct=cEl?+cEl.value:0;
+    if(answer){const d=detectCorrectOption(opts,answer);if(d>=0)correct=d;}
+    correct=Math.min(correct,Math.max(0,opts.length-1));
+  }else if(fmt==='tf'){tfAnswer=$('#tfAnswer').value||'True';}
+  if(!text){alert('Enter the question text.');return;}
+  const hasTable=tblState.rows.some(r=>r.some(c=>String(c).trim()))||tblState.rows.length!==2||tblState.widths.length!==4;
+  const data={subjectId:subjId,chapterId:chId,marks,type:$('#qType').value,format:fmt,
+    tfAnswer:fmt==='tf'?tfAnswer:'',text,
+    image:qImgData,imgW:+$('#qImgW').value||3,imgH:+$('#qImgH').value||2,
+    options:fmt==='mcq'?opts:[],correct:fmt==='mcq'?correct:0,
+    table:hasTable?JSON.parse(JSON.stringify(tblState)):null,
+    answer:answer||(fmt==='tf'?tfAnswer:''),answerImage:qAnsImgData};
+  if(editingId){const q=DB.questions.find(x=>x.id===editingId);if(q)Object.assign(q,data);}
+  else DB.questions.push(Object.assign({id:uid()},data));
+  saveDB();$('#addQStatus').innerHTML='<span class="badge">✔ Saved.</span>';
+  renderBankList();renderSetup();renderBankSelects();resetQForm();};
+
+function renderBankList(){
+  const subjId=$('#bankSubject').value;
+  const chId=$('#fChapter')?$('#fChapter').value:'',mk=$('#fMarks')?$('#fMarks').value:'';
+  const ty=$('#fType')?$('#fType').value:'',fm=$('#fFormat')?$('#fFormat').value:'';
+  const srch=($('#fSearch')?$('#fSearch').value:'').toLowerCase();
+  let list=DB.questions.filter(q=>q.subjectId===subjId);
+  if(chId)list=list.filter(q=>q.chapterId===chId);
+  if(mk)list=list.filter(q=>+q.marks===+mk);
+  if(ty)list=list.filter(q=>q.type===ty);
+  if(fm)list=list.filter(q=>guessFormat(q)===fm);
+  if(srch)list=list.filter(q=>(q.text||'').toLowerCase().includes(srch)||(q.answer||'').toLowerCase().includes(srch));
+  const w=$('#bankList');
+  if(!list.length){w.innerHTML='<div class="muted">No questions found.</div>';return;}
+  w.innerHTML=`<div class="badge" style="margin-bottom:8px">${list.length} question(s)</div>`+list.map((q,i)=>{
+    const fmt=guessFormat(q);
+    return `<div class="list-item"><div class="li-head"><span class="tag">${i+1}</span><span class="tag b">${esc(getSubject(q.subjectId)?.name||'—')}</span><span class="tag g">${esc(chapterName(q.chapterId))}</span><span class="tag o">${q.marks} mark</span><span class="tag r">${TYPE_SHORT[q.type]||'RU'}</span><span class="tag p">${FORMAT_SHORT[fmt]}</span><span style="flex:1"></span><button class="btn xs ghost" data-qedit="${q.id}">Edit</button><button class="btn xs danger" data-qdel="${q.id}">Delete</button></div><div class="li-body">${nl2br(q.text)}${(fmt==='mcq'&&q.options.length)?'<div style="margin-top:4px">'+q.options.map((o,j)=>`<div>(${'abcdefgh'[j]}) ${esc(o)}${j===q.correct?' ✔':''}</div>`).join('')+'</div>':''}${fmt==='tf'?`<div style="margin-top:4px">(a) True (b) False → <b>${esc(q.tfAnswer||'True')}</b></div>`:''}${q.answer?`<div style="margin-top:5px;color:#0a7a45"><b>Ans:</b> ${nl2br(q.answer)}</div>`:''}</div></div>`;}).join('');}
+document.addEventListener('click',e=>{
+  const ed=e.target.closest('[data-qedit]');if(ed){loadQuestionForEdit(ed.dataset.qedit);return;}
+  const dl=e.target.closest('[data-qdel]');
+  if(dl){if(!confirm('Delete this question?'))return;DB.questions=DB.questions.filter(q=>q.id!==dl.dataset.qdel);saveDB();renderBankList();renderSetup();renderBankSelects();}});
+function loadQuestionForEdit(id){
+  const q=DB.questions.find(x=>x.id===id);if(!q)return;
+  editingId=id;
+  if($('#bankSubject').value!==q.subjectId){$('#bankSubject').value=q.subjectId;renderBankSelects();}
+  $$('#bankTabs button').forEach(b=>b.classList.toggle('active',b.dataset.sub==='add'));
+  $$('.subpanel').forEach(p=>p.classList.toggle('active',p.id==='sub-add'));
+  $('#qChapter').value=q.chapterId||'';$('#qMarks').value=String(q.marks);$('#qType').value=q.type||'RU';
+  const fmt=guessFormat(q);$('#qFormat').value=fmt;applyFormat();
+  $('#qText').value=q.text||'';$('#qAnswer').value=q.answer||'';
+  optValues=(q.options||[]).slice();if(fmt==='mcq'&&!optValues.length)optValues=['','','',''];
+  renderOptList();
+  const radios=$$('input[name=correctOpt]');if(radios[q.correct])radios[q.correct].checked=true;
+  $('#tfAnswer').value=q.tfAnswer||(/^false$/i.test(q.answer||'')?'False':'True');
+  qImgData=q.image||'';qAnsImgData=q.answerImage||'';
+  $('#qImgPrev').innerHTML=qImgData?`<img src="${qImgData}" style="width:${q.imgW||3}in;height:${q.imgH||2}in;object-fit:contain;border:1px solid #ddd">`:'';
+  $('#qAnsImgPrev').innerHTML=qAnsImgData?`<img src="${qAnsImgData}" style="max-width:3in;border:1px solid #ddd">`:'';
+  $('#qImgW').value=q.imgW||3;$('#qImgH').value=q.imgH||2;
+  tblState=q.table?JSON.parse(JSON.stringify(q.table)):{widths:[25,25,25,25],rows:[['','','',''],['','','','']]};
+  renderTableEditor();
+  $('#btnSaveQ').textContent='💾 Update';$('#addQStatus').innerHTML='<span class="badge">Editing…</span>';
+  window.scrollTo({top:0,behavior:'smooth'});}
+['#fChapter','#fMarks','#fType','#fFormat'].forEach(s=>{if($(s))$(s).addEventListener('change',renderBankList);});
+$('#fSearch').addEventListener('input',renderBankList);
+$('#bankTabs').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-sub]');if(!b)return;
+  $$('#bankTabs button').forEach(x=>x.classList.toggle('active',x===b));
+  $$('.subpanel').forEach(p=>p.classList.toggle('active',p.id==='sub-'+b.dataset.sub));
+  if(b.dataset.sub==='browse'){renderBankSelects();renderBankList();}
+  if(b.dataset.sub==='add')applyFormat();});
+
+function snapshot(q,sectionId){
+  const fmt=guessFormat(q);
+  return{qid:q.id,sectionId,subjectId:q.subjectId,chapterId:q.chapterId,marks:+q.marks||1,type:q.type||'RU',format:fmt,
+    tfAnswer:fmt==='tf'?(q.tfAnswer||(/^false$/i.test(q.answer||'')?'False':'True')):'',
+    text:q.text||'',image:q.image||'',imgW:q.imgW||3,imgH:q.imgH||2,
+    options:fmt==='mcq'?(q.options||[]).slice():[],correct:q.correct||0,
+    table:q.table?JSON.parse(JSON.stringify(q.table)):null,
+    answer:q.answer||'',answerImage:q.answerImage||''};}
+function placeholderItem(chId,marks,sectionId){
+  return{qid:null,sectionId,subjectId:DB.setup.subjectId,chapterId:chId,marks,type:'RU',format:'desc',tfAnswer:'',
+    text:'[No question available in the bank for this chapter & mark.]',image:'',imgW:3,imgH:2,options:[],correct:0,table:null,
+    answer:'(not set)',answerImage:'',isPlaceholder:true};}
+function generatePaper(){
+  const subjId=DB.setup.subjectId;const used=new Set();
+  const chList=chaptersOfSubject(subjId);const allItems=[];let missing=0;
+  const ML=marksList();
+  DB.setup.sections.forEach(sec=>{
+    const perMark={};ML.forEach(m=>perMark[m]=[]);
+    ML.forEach(m=>{
+      chList.forEach(ch=>{
+        const n=+((sec.counts&&sec.counts[ch.id]&&sec.counts[ch.id][m])||0);
+        for(let i=0;i<n;i++){
+          const pool=DB.questions.filter(q=>q.subjectId===subjId&&q.chapterId===ch.id&&+q.marks===m&&!used.has(q.id));
+          if(pool.length){const q=pool[Math.floor(Math.random()*pool.length)];used.add(q.id);perMark[m].push(snapshot(q,sec.id));}
+          else{missing++;perMark[m].push(placeholderItem(ch.id,m,sec.id));}}});});
+    ML.forEach(m=>shuffleArray(perMark[m]));
+    ML.forEach(m=>allItems.push(...perMark[m]));});
+  DB.paper={items:allItems,subjectId:subjId,generatedAt:Date.now()};
+  saveDB();return missing;}
+$('#btnShuffleSection').onclick=()=>{
+  if(!DB.paper||!DB.paper.items.length){alert('Generate first.');return;}
+  const items=DB.paper.items;const result=[];
+  DB.setup.sections.forEach(sec=>{const secItems=items.filter(i=>i.sectionId===sec.id);result.push(...shuffleWithinMarks(secItems));});
+  DB.paper.items=result;saveDB();renderPreview();toast('Section-wise shuffle applied.');};
+$('#btnShuffleWhole').onclick=()=>{
+  if(!DB.paper||!DB.paper.items.length){alert('Generate first.');return;}
+  const items=DB.paper.items;const sectionSeq=items.map(i=>i.sectionId);
+  const shuffled=shuffleWithinMarks(items);shuffled.forEach((it,i)=>{it.sectionId=sectionSeq[i];});
+  DB.paper.items=shuffled;saveDB();renderPreview();toast('Whole-paper shuffle applied.');};
+
+function numberedItems(){const items=(DB.paper&&DB.paper.items)||[];return items.map((it,i)=>Object.assign({},it,{no:i+1}));}
+function totalMarks(){return numberedItems().reduce((a,it)=>a+(+it.marks||0),0);}
+function wmHTML(){const w=DB.setup.wm;
+  if(w.mode==='text'&&w.text)return`<div class="wm" style="color:${w.color};opacity:${w.opacity};font-size:${w.size}px">${esc(w.text)}</div>`;
+  if(w.mode==='image'&&w.src)return`<div class="wm" style="opacity:${w.opacity}"><img src="${w.src}"></div>`;
+  return'';}
+function autoInstructions(){
+  const items=numberedItems();const out=[];
+  out.push('All questions are compulsory.');
+  out.push(`This question paper consists of ${items.length} question(s) divided into ${DB.setup.sections.length} section(s).`);
+  DB.setup.sections.forEach(sec=>{
+    const si=items.filter(i=>i.sectionId===sec.id);if(!si.length)return;
+    const byMark={};si.forEach(i=>{byMark[i.marks]=(byMark[i.marks]||0)+1;});
+    const parts=Object.keys(byMark).sort((a,b)=>a-b).map(m=>`${byMark[m]} question(s) of ${m} mark(s)`);
+    out.push(`${sec.name} contains ${parts.join(', ')}.`);});
+  out.push('Marks for each question are indicated against it.');
+  out.push('Write answers neatly and legibly.');
+  return out;}
+function instructionsLines(){const s=DB.setup;if(s.instr.mode==='none')return[];
+  if(s.instr.mode==='custom')return(s.instr.text||'').split('\n').map(x=>x.trim()).filter(Boolean);
+  return autoInstructions();}
+function instructionsHTML(){const lines=instructionsLines();if(!lines.length)return'';
+  return`<div class="instr"><div class="instr-title">General Instructions:</div><ol>${lines.map(l=>`<li>${esc(l)}</li>`).join('')}</ol></div>`;}
+function hasCorrectMarker(txt,index){
+  const letters='abcdefgh';const l=letters[index];const n=String(index+1);
+  if(!l)return false;
+  const V=[`(${l}) `,`(${l})`,`[${l}] `,`[${l}]`,`${l}) `,`${l})`,`${l}. `,`${l}.`,`${l}- `,`${l}-`,`${l}: `,`${l}:`,`(${l.toUpperCase()}) `,`(${l.toUpperCase()})`,`[${l.toUpperCase()}] `,`[${l.toUpperCase()}]`,`${l.toUpperCase()}) `,`${l.toUpperCase()})`,`${l.toUpperCase()}. `,`${l.toUpperCase()}.`,`(${n}) `,`(${n})`,`[${n}] `,`[${n}]`,`${n}) `,`${n})`,`${n}. `,`${n}.`,`${n}- `,`${n}-`,`${n}: `,`${n}:`];
+  return V.some(v=>txt.startsWith(v));}
+function optionsHTML(opts,correct){
+  if(!opts||!opts.length)return'';
+  const short=opts.every(o=>String(o).length<=42);const letters='abcdefgh';
+  return`<div class="opts${(!short||opts.length%2)?' one':''}">`+opts.map((o,i)=>{
+    const txt=String(o);const prefix=hasCorrectMarker(txt,i)?'':`(${letters[i]||(i+1)}) `;
+    return`<div class="opt${correct===i?' correct':''}">${prefix}${esc(txt)}</div>`;}).join('')+'</div>';}
+function tableHTML(t){
+  if(!t)return'';
+  const n=t.rows[0]?t.rows[0].length:1;
+  let widths=(t.widths&&t.widths.length===n)?t.widths.slice():null;
+  if(!widths){const eq=Math.floor(100/n);widths=[];for(let i=0;i<n;i++)widths.push(i===n-1?100-eq*(n-1):eq);}
+  else{const sum=widths.reduce((a,b)=>a+(+b||0),0)||1;widths=widths.map(w=>(Math.round((+w/sum)*1000)/10));const total=widths.reduce((a,b)=>a+b,0);widths[widths.length-1]=Math.round((widths[widths.length-1]+(100-total))*10)/10;}
+  let h='<table class="q-table"><colgroup>'+widths.map(w=>`<col style="width:${w}%">`).join('')+'</colgroup>';
+  t.rows.forEach(r=>{h+='<tr>'+r.map(c=>`<td>${nl2br(c)}</td>`).join('')+'</tr>';});
+  return h+'</table>';}
+function questionHTML(it,withAnswers,idx){
+  const fmt=it.format||guessFormat(it);
+  let h=`<div class="q" data-idx="${idx}">`;
+  h+=`<div class="q-line"><div class="q-body"><span class="q-no">${it.no}.</span> <span class="q-txt">${nl2br(it.text)}</span></div><div class="q-marks">[${it.marks}]</div></div>`;
+  if(it.image)h+=`<div class="q-img"><img src="${it.image}" style="width:${it.imgW||3}in;height:${it.imgH||2}in;object-fit:contain"></div>`;
+  if(it.table)h+=tableHTML(it.table);
+  if(fmt==='mcq'&&it.options.length){h+=optionsHTML(it.options,withAnswers?it.correct:-1);}
+  else if(fmt==='tf'){const tfCorrect=(it.tfAnswer||'True')==='False'?1:0;h+=optionsHTML(['True','False'],withAnswers?tfCorrect:-1);}
+  if(withAnswers){
+    let ansTxt=it.answer||'—';
+    if(fmt==='tf'){const tf=it.tfAnswer||'True';const extra=it.answer&&!/^(true|false)$/i.test(it.answer.trim())?' — '+it.answer:'';ansTxt=tf+extra;}
+    h+=`<div class="ans"><span class="ans-lbl">Ans.</span> ${nl2br(ansTxt)}</div>`;
+    if(it.answerImage)h+=`<div class="ans-img"><img src="${it.answerImage}" style="width:3in"></div>`;}
+  return h+'</div>';}
+function renderDocInner(withAnswers){
+  const s=DB.setup;const subj=getSubject(s.subjectId);const items=numberedItems();
+  let h='';
+  const lw=(s.logoL.w||1),lh=(s.logoL.h||1);
+  const rw=(s.logoR.w||1),rh=(s.logoR.h||1);
+  h+=`<div class="pp-head">
+    <div class="pp-logo" style="width:${lw}in;height:${lh}in">${s.logoL.src?`<img src="${s.logoL.src}" style="width:${lw}in;height:${lh}in">`:''}</div>
+    <div class="pp-mid">
+      <div class="pp-school">${esc(s.school||'School / Institute Name')}</div>
+      <div class="pp-exam">${esc(s.exam||'Examination Name')}</div>
+      ${subj?`<div class="pp-sub">Subject: ${esc(subj.name)}</div>`:''}
+      ${withAnswers?'<div class="pp-sub">— ANSWER KEY —</div>':''}
+      <div class="pp-meta"><span>Date: ${esc(fmtDate(s.date)||'____________')}</span><span>Time: ${esc(s.time||'____________')}</span><span>Max Marks: ${totalMarks()}</span></div>
+    </div>
+    <div class="pp-logo" style="width:${rw}in;height:${rh}in">${s.logoR.src?`<img src="${s.logoR.src}" style="width:${rw}in;height:${rh}in">`:''}</div>
+  </div>`;
+  h+=instructionsHTML();
+  if(!items.length)h+='<div class="muted" style="text-align:center;padding:30px 0">No paper generated yet.</div>';
+  DB.setup.sections.forEach(sec=>{
+    const secItems=items.filter(i=>i.sectionId===sec.id);if(!secItems.length)return;
+    h+=`<div class="sec-title">${esc(sec.name)}</div>`;
+    if(sec.desc)h+=`<div class="sec-note">${esc(sec.desc)}</div>`;
+    secItems.forEach(it=>{h+=questionHTML(it,withAnswers,it.no-1);});});
+  if(s.endMessage)h+=`<div class="pp-end">${esc(s.endMessage)}</div>`;
+  return h;}
+const FOOTER_RESERVE_IN=0.35;
+function paginateInnerHTML(innerHTML,contentW,contentH){
+  const availH=Math.max(120,(contentH-FOOTER_RESERVE_IN)*96);
+  if(!innerHTML||!innerHTML.trim())return[{html:''}];
+  const meas=document.createElement('div');
+  meas.className='paper';
+  meas.style.cssText=`position:absolute;left:-99999px;top:0;width:${contentW}in;padding:0;margin:0;box-shadow:none;visibility:hidden;overflow:visible;height:auto;background:#fff`;
+  meas.innerHTML=innerHTML;
+  document.body.appendChild(meas);
+  const blocks=Array.from(meas.children).map(el=>({html:el.outerHTML,h:el.getBoundingClientRect().height,isSecTitle:el.classList.contains('sec-title')}));
+  document.body.removeChild(meas);
+  const pages=[];let cur=[],curH=0;
+  for(let i=0;i<blocks.length;i++){
+    const b=blocks[i];
+    if(b.isSecTitle&&cur.length){const nextH=blocks[i+1]?blocks[i+1].h:0;
+      if(curH+b.h+nextH>availH){pages.push(cur);cur=[];curH=0;}}
+    if(curH+b.h>availH&&cur.length){pages.push(cur);cur=[];curH=0;}
+    cur.push(b);curH+=b.h;}
+  if(cur.length)pages.push(cur);
+  if(!pages.length)pages.push([]);
+  return pages;}
+function buildPaperPages(pages,withAnswers,config){
+  const{pageW,pageH,mT,mR,mB,mL,pageFooter,showPageNumbers}=config;
+  const total=pages.length;
+  return pages.map((pg,i)=>{
+    const body=pg.length?pg.map(b=>b.html).join(''):'';
+    const footerHtml=pageFooter?`<div class="paper-footer" style="bottom:${mB-0.18}in;left:${mL}in;right:${mR+1.3}in">${nl2br(pageFooter)}</div>`:'';
+    const pageNumHtml=showPageNumbers?`<div class="paper-page-num" style="bottom:${mB-0.18}in;right:${mR}in">Page ${i+1} of ${total}</div>`:'';
+    return`<div class="paper" style="width:${pageW}in;height:${pageH}in;padding:${mT}in ${mR}in ${mB}in ${mL}in;box-sizing:border-box">
+      ${wmHTML()}
+      <div class="paper-content">${body}</div>
+      ${footerHtml}
+      ${pageNumHtml}
+    </div>`;}).join('');}
+function renderPreviewPages(withAnswers){
+  const s=DB.setup;
+  const page=PAGE_SIZES[s.pageSize]||PAGE_SIZES['A4'];
+  const mT=s.margins.top,mR=s.margins.right,mB=s.margins.bottom,mL=s.margins.left;
+  const contentW=page.w-mL-mR,contentH=page.h-mT-mB;
+  const innerHTML=renderDocInner(withAnswers);
+  const pages=paginateInnerHTML(innerHTML,contentW,contentH);
+  return buildPaperPages(pages,withAnswers,{pageW:page.w,pageH:page.h,mT,mR,mB,mL,pageFooter:s.footer||'',showPageNumbers:s.showPageNumbers!==false});}
+
+let showAnswersInPreview=false;
+function syncPreviewControls(){
+  const s=DB.setup;
+  if($('#previewPageSize'))$('#previewPageSize').value=s.pageSize||'A4';
+  if($('#marginTop'))$('#marginTop').value=s.margins.top;
+  if($('#marginRight'))$('#marginRight').value=s.margins.right;
+  if($('#marginBottom'))$('#marginBottom').value=s.margins.bottom;
+  if($('#marginLeft'))$('#marginLeft').value=s.margins.left;
+  updatePrintPageStyle();}
+function updatePrintPageStyle(){
+  const s=DB.setup;
+  const page=PAGE_SIZES[s.pageSize]||PAGE_SIZES['A4'];
+  const styleEl=$('#printPageStyle');
+  if(styleEl)styleEl.textContent=`@page{size:${page.css};margin:0}`;}
+function renderPreview(){
+  const wrap=$('#paperPreview');syncPreviewControls();
+  if(!wrap)return;
+  if(!DB.paper||!DB.paper.items.length){
+    wrap.innerHTML='<div class="card" style="text-align:center;color:#6b7280">No paper yet — click Generate.</div>';
+    $('#previewStatus').textContent='';return;}
+  wrap.innerHTML=renderPreviewPages(showAnswersInPreview);
+  addControlBars(wrap);
+  const items=numberedItems();const miss=items.filter(i=>i.isPlaceholder).length;
+  const subj=getSubject(DB.paper.subjectId||DB.setup.subjectId);const s=DB.setup;
+  $('#previewStatus').innerHTML=(subj?`Subject: <b>${esc(subj.name)}</b> · `:'')+
+    `Total: <b>${items.length}</b> Qs · <b>${totalMarks()}</b> marks · Page: <b>${esc(s.pageSize)}</b> · Margins: <b>T${s.margins.top}" R${s.margins.right}" B${s.margins.bottom}" L${s.margins.left}"</b>`+
+    (s.showPageNumbers===false?' · <span class="muted">Page numbers off</span>':' · <span class="muted">Page numbers on</span>')+
+    (miss?` · <span style="color:#c77700"><b>${miss}</b> missing — replace them.</span>`:'');}
+function addControlBars(root){
+  const items=numberedItems();const ML=marksList();
+  $$('.q',root).forEach(el=>{
+    const idx=+el.dataset.idx;const it=items[idx];if(!it)return;
+    const fmt=it.format||'desc';
+    const bar=document.createElement('div');bar.className='q-ctrl';
+    bar.innerHTML=`
+      <span class="tag">Q${it.no}</span><span class="tag g">${esc(chapterName(it.chapterId))}</span>
+      <span class="tag r">${TYPE_SHORT[it.type]||'RU'}</span><span class="tag p">${FORMAT_SHORT[fmt]}</span>
+      <span class="muted">Marks</span>
+      <select data-act="marks" data-idx="${idx}">${ML.map(m=>`<option value="${m}" ${+it.marks===m?'selected':''}>${m}</option>`).join('')}</select>
+      <button class="btn xs" data-act="replace" data-idx="${idx}">🔄 Replace</button>
+      <button class="btn xs ghost" data-act="edit" data-idx="${idx}">✏ Edit</button>
+      <button class="btn xs ghost" data-act="up" data-idx="${idx}">↑</button>
+      <button class="btn xs ghost" data-act="down" data-idx="${idx}">↓</button>
+      <button class="btn xs danger" data-act="del" data-idx="${idx}">✕</button>`;
+    el.insertBefore(bar,el.firstChild);});}
+$('#paperPreview').addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.act==='marks'){DB.paper.items[+t.dataset.idx].marks=+t.value;saveDB();renderPreview();}});
+$('#paperPreview').addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const act=b.dataset.act,idx=+b.dataset.idx;
+  if(act==='replace')openReplaceModal(idx);
+  if(act==='edit')openEditModal(idx);
+  if(act==='del'){if(!confirm('Remove from paper?'))return;DB.paper.items.splice(idx,1);saveDB();renderPreview();}
+  if(act==='up'&&idx>0){const a=DB.paper.items;[a[idx-1],a[idx]]=[a[idx],a[idx-1]];saveDB();renderPreview();}
+  if(act==='down'&&idx<DB.paper.items.length-1){const a=DB.paper.items;[a[idx+1],a[idx]]=[a[idx],a[idx+1]];saveDB();renderPreview();}});
+function openReplaceModal(idx){
+  const it=DB.paper.items[idx];const subjId=DB.paper.subjectId||DB.setup.subjectId;
+  const chList=chaptersOfSubject(subjId);
+  const chOptions=chList.map(c=>`<option value="${c.id}" ${c.id===it.chapterId?'selected':''}>${esc(c.name)}</option>`).join('');
+  const ML=marksList();
+  const html=`<h2>Replace Question ${idx+1}</h2><div class="row">
+    <label class="fld"><span>Chapter</span><select id="rpChapter">${chOptions}</select></label>
+    <label class="fld"><span>Marks</span><select id="rpMarks">${ML.map(m=>`<option value="${m}" ${+it.marks===m?'selected':''}>${m}</option>`).join('')}</select></label>
+    <label class="fld"><span>Type</span><select id="rpType"><option value="">All</option><option value="RU" ${it.type==='RU'?'selected':''}>RU</option><option value="AP" ${it.type==='AP'?'selected':''}>AP</option><option value="EAC" ${it.type==='EAC'?'selected':''}>EAC</option></select></label>
+    <label class="fld"><span>Format</span><select id="rpFormat"><option value="">All</option><option value="mcq" ${it.format==='mcq'?'selected':''}>MCQ</option><option value="tf" ${it.format==='tf'?'selected':''}>True/False</option><option value="desc" ${it.format==='desc'?'selected':''}>Descriptive</option></select></label>
+  </div><div id="rpList" style="max-height:52vh;overflow:auto"></div><div class="modal-actions"><button class="btn ghost" data-close>Cancel</button></div>`;
+  openModal(html,box=>{
+    const list=$('#rpList',box);
+    const refresh=()=>{
+      const ch=$('#rpChapter',box).value,mk=$('#rpMarks',box).value,ty=$('#rpType',box).value,fm=$('#rpFormat',box).value;
+      const used=new Set(DB.paper.items.filter((_,i)=>i!==idx).map(x=>x.qid));
+      let pool=DB.questions.filter(q=>q.subjectId===subjId&&q.chapterId===ch&&+q.marks===+mk&&!used.has(q.id));
+      if(ty)pool=pool.filter(q=>q.type===ty);if(fm)pool=pool.filter(q=>guessFormat(q)===fm);
+      list.innerHTML=pool.length?pool.map(q=>{const f=guessFormat(q);return`<div class="list-item" style="cursor:pointer" data-pick="${q.id}"><div class="li-head"><span class="tag o">${q.marks} mark</span><span class="tag r">${TYPE_SHORT[q.type]}</span><span class="tag p">${FORMAT_SHORT[f]}</span></div><div class="li-body">${nl2br(q.text)}${(f==='mcq'&&q.options.length)?'<div style="margin-top:4px">'+q.options.map((o,j)=>`<div>(${'abcdefgh'[j]}) ${esc(o)}${j===q.correct?' ✔':''}</div>`).join('')+'</div>':''}</div></div>`;}).join(''):'<div class="muted">No matching questions.</div>';};
+    ['#rpChapter','#rpMarks','#rpType','#rpFormat'].forEach(s=>$(s,box).addEventListener('change',refresh));
+    list.addEventListener('click',e=>{const p=e.target.closest('[data-pick]');if(!p)return;const q=DB.questions.find(x=>x.id===p.dataset.pick);if(!q)return;DB.paper.items[idx]=snapshot(q,DB.paper.items[idx].sectionId);saveDB();closeModal();renderPreview();});
+    refresh();});}
+function openEditModal(idx){
+  const it=DB.paper.items[idx];const subjId=DB.paper.subjectId||DB.setup.subjectId;
+  const chList=chaptersOfSubject(subjId);const fmt=it.format||'desc';const ML=marksList();
+  const html=`<h2>Edit Question ${idx+1}</h2>
+    <label class="fld"><span>Text</span><textarea id="edText" rows="4">${esc(it.text)}</textarea></label>
+    <div class="row">
+      <label class="fld"><span>Marks</span><select id="edMarks">${ML.map(m=>`<option value="${m}" ${+it.marks===m?'selected':''}>${m}</option>`).join('')}</select></label>
+      <label class="fld"><span>Chapter</span><select id="edChapter">${chList.map(c=>`<option value="${c.id}" ${c.id===it.chapterId?'selected':''}>${esc(c.name)}</option>`).join('')}</select></label>
+      <label class="fld"><span>Type</span><select id="edType"><option value="RU" ${it.type==='RU'?'selected':''}>RU</option><option value="AP" ${it.type==='AP'?'selected':''}>AP</option><option value="EAC" ${it.type==='EAC'?'selected':''}>EAC</option></select></label>
+      <label class="fld"><span>Format</span><select id="edFormat"><option value="desc" ${fmt==='desc'?'selected':''}>Descriptive</option><option value="mcq" ${fmt==='mcq'?'selected':''}>MCQ</option><option value="tf" ${fmt==='tf'?'selected':''}>True / False</option></select></label>
+    </div>
+    <div id="edOptWrap" style="${fmt==='mcq'?'':'display:none'}"><label class="fld"><span>Options (one per line, * marks correct)</span><textarea id="edOpts" rows="4">${esc((it.options||[]).map((o,i)=>(i===it.correct?'*':'')+o).join('\n'))}</textarea></label></div>
+    <div id="edTfWrap" style="${fmt==='tf'?'':'display:none'}"><label class="fld"><span>Correct</span><select id="edTf"><option value="True" ${(it.tfAnswer||'True')==='True'?'selected':''}>True</option><option value="False" ${(it.tfAnswer||'True')==='False'?'selected':''}>False</option></select></label></div>
+    <label class="fld"><span>Answer</span><textarea id="edAns" rows="3">${esc(it.answer)}</textarea></label>
+    <div class="modal-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn ok" id="edSave">Save</button></div>`;
+  openModal(html,box=>{
+    $('#edFormat',box).addEventListener('change',e=>{
+      $('#edOptWrap',box).style.display=e.target.value==='mcq'?'':'none';
+      $('#edTfWrap',box).style.display=e.target.value==='tf'?'':'none';});
+    $('#edSave',box).onclick=()=>{
+      const item=DB.paper.items[idx];
+      item.text=$('#edText',box).value;item.marks=+$('#edMarks',box).value;
+      item.chapterId=$('#edChapter',box).value;item.type=$('#edType',box).value;
+      item.answer=$('#edAns',box).value;
+      const nf=$('#edFormat',box).value;item.format=nf;
+      if(nf==='mcq'){
+        const lines=$('#edOpts',box).value.split('\n').map(s=>s.trim()).filter(Boolean);
+        let correct=0;
+        item.options=lines.map((l,i)=>{if(/^\*/.test(l)){correct=i;return l.replace(/^\*\s*/,'').trim();}const s=stripOptionMarker(l);return s?s.text:l;});
+        item.correct=correct;item.tfAnswer='';
+        if(item.answer){const d=detectCorrectOption(item.options,item.answer);if(d>=0)item.correct=d;}
+      }else if(nf==='tf'){item.options=[];item.correct=0;item.tfAnswer=$('#edTf',box).value||'True';if(!item.answer)item.answer=item.tfAnswer;}
+      else{item.options=[];item.correct=0;item.tfAnswer='';}
+      saveDB();closeModal();renderPreview();};});}
+$('#btnGenerate').onclick=()=>{
+  if(currentUser&&currentUser.isGuest){
+    if(DB.demo.used>=DB.demo.max){
+      alert('🎬 Your 1 free demo paper has already been generated on this file.\n\nPlease login with your ID and password to continue, or ask the host for access.');
+      showLoginScreen();
+      return;}
+    DB.demo.used++;saveDB();
+    toast('Demo generation used: '+DB.demo.used+' of '+DB.demo.max);}
+  const missing=generatePaper();
+  renderPreview();
+  if(currentUser&&currentUser.isGuest&&DB.demo.used>=DB.demo.max){
+    setTimeout(()=>{alert('This was your 1 free demo paper.\n\nTo generate more papers, please login with your ID and password.');},400);
+  }else if(missing){
+    alert(missing+' question(s) could not be filled from the bank. Use Replace.');}};
+$('#btnToggleAns').onclick=()=>{showAnswersInPreview=!showAnswersInPreview;renderPreview();};
+$('#btnSavePaper').onclick=()=>{
+  if(currentUser&&currentUser.isGuest){
+    alert('Saving papers is not available in demo mode. Please login with proper credentials.');
+    return;}
+  if(!DB.paper||!DB.paper.items.length){alert('Generate first.');return;}
+  const subj=getSubject(DB.paper.subjectId||DB.setup.subjectId);
+  const defName=(subj?subj.name+' — ':'')+(DB.setup.exam||'Paper')+' — '+(DB.setup.date||new Date().toISOString().slice(0,10));
+  const name=prompt('Name:',defName);if(!name)return;
+  DB.savedPapers.unshift({id:uid(),name,savedAt:Date.now(),setup:JSON.parse(JSON.stringify(DB.setup)),items:JSON.parse(JSON.stringify(DB.paper.items)),subjectId:DB.paper.subjectId||DB.setup.subjectId});
+  saveDB();renderSavedList();alert('Saved.');};
+$('#previewPageSize').addEventListener('change',e=>{DB.setup.pageSize=e.target.value;saveDB();updatePrintPageStyle();renderPreview();});
+['Top','Right','Bottom','Left'].forEach(side=>{
+  const sel='#margin'+side;
+  $(sel).addEventListener('input',e=>{const v=Math.max(0.2,Math.min(2,+e.target.value||0.75));DB.setup.margins[side.toLowerCase()]=v;saveDB();updatePrintPageStyle();if(DB.paper&&DB.paper.items.length)renderPreview();});});
+$('#btnResetMargins').onclick=()=>{DB.setup.margins={top:0.75,right:0.75,bottom:0.75,left:0.75};saveDB();syncPreviewControls();if(DB.paper&&DB.paper.items.length)renderPreview();};
+
+function getBankFilters(){return{subjectId:$('#bankSubject').value,chapterId:$('#fChapter').value,marks:$('#fMarks').value,type:$('#fType').value,format:$('#fFormat').value,search:($('#fSearch').value||'').toLowerCase()};}
+function getFilteredBankQuestions(){
+  const f=getBankFilters();
+  let list=DB.questions.filter(q=>q.subjectId===f.subjectId);
+  if(f.chapterId)list=list.filter(q=>q.chapterId===f.chapterId);
+  if(f.marks)list=list.filter(q=>+q.marks===+f.marks);
+  if(f.type)list=list.filter(q=>q.type===f.type);
+  if(f.format)list=list.filter(q=>guessFormat(q)===f.format);
+  if(f.search)list=list.filter(q=>(q.text||'').toLowerCase().includes(f.search)||(q.answer||'').toLowerCase().includes(f.search));
+  return list;}
+function renderBankDocInner(items,withAnswers){
+  const s=DB.setup;const f=getBankFilters();const subj=getSubject(f.subjectId);
+  const chLabel=f.chapterId?chapterName(f.chapterId):'';
+  const totalM=items.reduce((a,q)=>a+(+q.marks||0),0);
+  const lw=(s.logoL.w||1),lh=(s.logoL.h||1),rw=(s.logoR.w||1),rh=(s.logoR.h||1);
+  let h='';
+  h+=`<div class="pp-head">
+    <div class="pp-logo" style="width:${lw}in;height:${lh}in">${s.logoL.src?`<img src="${s.logoL.src}" style="width:${lw}in;height:${lh}in">`:''}</div>
+    <div class="pp-mid">
+      <div class="pp-school">${esc(s.school||'School / Institute Name')}</div>
+      <div class="pp-exam">Question Bank</div>
+      ${subj?`<div class="pp-sub">Subject: ${esc(subj.name)}${chLabel?' · Chapter: '+esc(chLabel):''}</div>`:''}
+      <div class="pp-sub" style="font-weight:700">${withAnswers?'— WITH ANSWER KEY —':'— WITHOUT ANSWERS —'}</div>
+      <div class="pp-meta"><span>Total Questions: ${items.length}</span><span>Total Marks: ${totalM}</span></div>
+    </div>
+    <div class="pp-logo" style="width:${rw}in;height:${rh}in">${s.logoR.src?`<img src="${s.logoR.src}" style="width:${rw}in;height:${rh}in">`:''}</div>
+  </div>`;
+  if(!items.length){h+='<div class="muted" style="text-align:center;padding:30px 0">No questions match the current filters.</div>';return h;}
+  const groups={};
+  items.forEach(q=>{const key=q.chapterId||'_';if(!groups[key])groups[key]=[];groups[key].push(q);});
+  const chKeys=Object.keys(groups);const showChapterTitles=chKeys.length>1;
+  let globalNo=0;
+  chKeys.forEach(chId=>{
+    const chItems=groups[chId].slice().sort((a,b)=>(+a.marks||0)-(+b.marks||0));
+    if(showChapterTitles)h+=`<div class="sec-title">${esc(chId==='_'?'Unassigned Questions':chapterName(chId))}</div>`;
+    chItems.forEach(q=>{globalNo++;const item=Object.assign({},q,{no:globalNo,format:guessFormat(q)});h+=questionHTML(item,withAnswers,globalNo-1);});});
+  return h;}
+function renderBankPages(items,withAnswers){
+  const s=DB.setup;
+  const page=PAGE_SIZES[s.pageSize]||PAGE_SIZES['A4'];
+  const mT=s.margins.top,mR=s.margins.right,mB=s.margins.bottom,mL=s.margins.left;
+  const contentW=page.w-mL-mR,contentH=page.h-mT-mB;
+  const innerHTML=renderBankDocInner(items,withAnswers);
+  const pages=paginateInnerHTML(innerHTML,contentW,contentH);
+  return buildPaperPages(pages,withAnswers,{pageW:page.w,pageH:page.h,mT,mR,mB,mL,pageFooter:'',showPageNumbers:s.showPageNumbers!==false});}
+function printBank(mode){
+  const items=getFilteredBankQuestions();
+  if(!items.length){alert('No questions match the current filters.');return;}
+  updatePrintPageStyle();
+  const withoutAns=renderBankPages(items,false);
+  const withAns=renderBankPages(items,true);
+  let body;
+  if(mode==='with')body=withAns;
+  else if(mode==='without')body=withoutAns;
+  else body=withoutAns+withAns;
+  $('#printArea').innerHTML=body;
+  void $('#printArea').offsetHeight;
+  setTimeout(()=>window.print(),250);}
+$('#btnBankPrintWithAns').onclick=()=>printBank('with');
+$('#btnBankPrintWithoutAns').onclick=()=>printBank('without');
+$('#btnBankPrintBoth').onclick=()=>printBank('both');
+
+function renderWordHeader(withAnswers){
+  const s=DB.setup;const subj=getSubject(s.subjectId);
+  const lw=(s.logoL.w||1),lh=(s.logoL.h||1);
+  const rw=(s.logoR.w||1),rh=(s.logoR.h||1);
+  const lwPx=Math.round(lw*96),lhPx=Math.round(lh*96);
+  const rwPx=Math.round(rw*96),rhPx=Math.round(rh*96);
+  let h=`<table class="wp-header" style="width:100%;border-collapse:collapse;border-bottom:2pt solid #000000;">
+    <tr>
+      <td style="width:${lw}in;text-align:center;vertical-align:middle;padding:0;">`;
+  if(s.logoL.src)h+=`<img src="${s.logoL.src}" width="${lwPx}" height="${lhPx}" style="width:${lw}in;height:${lh}in;">`;
+  h+=`</td>
+      <td style="text-align:center;vertical-align:middle;padding:4pt 6pt;">
+        <div class="wp-school">${esc(s.school||'School / Institute Name')}</div>
+        <div class="wp-exam">${esc(s.exam||'Examination Name')}</div>
+        ${subj?`<div class="wp-sub">Subject: ${esc(subj.name)}</div>`:''}
+        ${withAnswers?'<div class="wp-sub" style="font-weight:bold;">— ANSWER KEY —</div>':''}
+        <table style="width:100%;border-collapse:collapse;margin-top:4pt;">
+          <tr>
+            <td style="font-size:10.5pt;font-weight:bold;text-align:left;padding:0;">Date: ${esc(fmtDate(s.date)||'____________')}</td>
+            <td style="font-size:10.5pt;font-weight:bold;text-align:center;padding:0;">Time: ${esc(s.time||'____________')}</td>
+            <td style="font-size:10.5pt;font-weight:bold;text-align:right;padding:0;">Maximum Marks: ${totalMarks()}</td>
+          </tr>
+        </table>
+      </td>
+      <td style="width:${rw}in;text-align:center;vertical-align:middle;padding:0;">`;
+  if(s.logoR.src)h+=`<img src="${s.logoR.src}" width="${rwPx}" height="${rhPx}" style="width:${rw}in;height:${rh}in;">`;
+  h+=`</td>
+    </tr>
+  </table>`;
+  return h;}
+function renderWordQuestion(it,withAnswers){
+  const fmt=it.format||guessFormat(it);
+  const letters='abcdefgh';
+  let body=esc(it.text).replace(/\n/g,'<br>');
+  if(it.image){const wPx=Math.round((it.imgW||3)*96),hPx=Math.round((it.imgH||2)*96);body+=`<br><img src="${it.image}" width="${wPx}" height="${hPx}" style="width:${it.imgW||3}in;height:${it.imgH||2}in;"><br>`;}
+  if(it.table){
+    const t=it.table;
+    body+=`<table style="border-collapse:collapse;margin:4pt 0;width:100%;table-layout:fixed;">`;
+    t.rows.forEach(r=>{
+      body+='<tr>';
+      r.forEach((c,ci)=>{const w=(t.widths&&t.widths[ci])||Math.round(100/r.length);body+=`<td style="border:1pt solid #000000;padding:3pt 5pt;width:${w}%;vertical-align:top;">${esc(c).replace(/\n/g,'<br>')}</td>`;});
+      body+='</tr>';});
+    body+=`</table>`;}
+  if(fmt==='mcq'&&it.options&&it.options.length){
+    body+=`<table style="width:100%;border-collapse:collapse;margin:4pt 0 0 0;"><tr>`;
+    it.options.forEach((o,i)=>{
+      if(i>0&&i%2===0)body+=`</tr><tr>`;
+      const correct=withAnswers&&i===it.correct;
+      body+=`<td style="width:50%;vertical-align:top;padding:1pt 0;font-size:11pt;${correct?'font-weight:bold;text-decoration:underline;':''}">(${letters[i]||(i+1)}) ${esc(o)}</td>`;});
+    body+=`</tr></table>`;
+  }else if(fmt==='tf'){
+    const tfCorrect=(it.tfAnswer||'True')==='False'?1:0;
+    body+=`<table style="width:100%;border-collapse:collapse;margin:4pt 0 0 0;">
+      <tr>
+        <td style="width:50%;padding:1pt 0;font-size:11pt;${withAnswers&&tfCorrect===0?'font-weight:bold;text-decoration:underline;':''}">(a) True</td>
+        <td style="width:50%;padding:1pt 0;font-size:11pt;${withAnswers&&tfCorrect===1?'font-weight:bold;text-decoration:underline;':''}">(b) False</td>
+      </tr>
+    </table>`;}
+  if(withAnswers){
+    let ansTxt=it.answer||'—';
+    if(fmt==='tf'){const tf=it.tfAnswer||'True';const extra=it.answer&&!/^(true|false)$/i.test(it.answer.trim())?' — '+it.answer:'';ansTxt=tf+extra;}
+    body+=`<div style="margin-top:4pt;padding:3pt 6pt;border-left:3pt solid #4a7bd0;background:#f2f7ff;font-size:10.5pt;">
+      <b style="color:#0b3fd1;">Ans.</b> ${esc(ansTxt).replace(/\n/g,'<br>')}
+    </div>`;
+    if(it.answerImage)body+=`<div style="margin-top:4pt;"><img src="${it.answerImage}" width="288" style="width:3in;"></div>`;}
+  return `<table style="width:100%;border-collapse:collapse;margin:0 0 8pt 0;">
+    <tr>
+      <td style="width:0.45in;vertical-align:top;font-weight:bold;padding:0;">${it.no}.</td>
+      <td style="vertical-align:top;padding:0 6pt;">${body}</td>
+      <td style="width:0.6in;vertical-align:top;text-align:right;font-weight:bold;padding:0;">[${it.marks}]</td>
+    </tr>
+  </table>`;}
+function renderDocForWord(withAnswers){
+  const s=DB.setup;const items=numberedItems();
+  let h='';
+  h+=renderWordHeader(withAnswers);
+  const instrLines=instructionsLines();
+  if(instrLines.length){
+    h+=`<div style="border:1pt solid #000000;padding:6pt 8pt;margin:8pt 0 12pt 0;font-size:10.5pt;">
+      <div style="font-weight:bold;margin-bottom:3pt;">General Instructions:</div>
+      <ol style="margin:0;padding-left:18pt;">`;
+    instrLines.forEach(l=>{h+=`<li style="margin-bottom:2pt;">${esc(l)}</li>`;});
+    h+=`</ol></div>`;}
+  if(!items.length)h+=`<div style="text-align:center;padding:20pt 0;color:#666;">No paper generated yet.</div>`;
+  DB.setup.sections.forEach(sec=>{
+    const secItems=items.filter(i=>i.sectionId===sec.id);
+    if(!secItems.length)return;
+    h+=`<div style="font-weight:bold;font-size:12pt;text-align:center;text-transform:uppercase;border-bottom:1pt solid #000000;margin:14pt 0 6pt 0;padding-bottom:2pt;">${esc(sec.name)}</div>`;
+    if(sec.desc)h+=`<div style="text-align:center;font-size:10pt;font-style:italic;margin-bottom:6pt;">${esc(sec.desc)}</div>`;
+    secItems.forEach(it=>{h+=renderWordQuestion(it,withAnswers);});});
+  if(s.endMessage)h+=`<div style="text-align:center;font-weight:bold;margin-top:14pt;">${esc(s.endMessage)}</div>`;
+  return h;}
+function renderBankDocForWord(items,withAnswers){
+  const s=DB.setup;const f=getBankFilters();const subj=getSubject(f.subjectId);
+  const chLabel=f.chapterId?chapterName(f.chapterId):'';
+  const totalM=items.reduce((a,q)=>a+(+q.marks||0),0);
+  const lw=(s.logoL.w||1),lh=(s.logoL.h||1),rw=(s.logoR.w||1),rh=(s.logoR.h||1);
+  const lwPx=Math.round(lw*96),lhPx=Math.round(lh*96),rwPx=Math.round(rw*96),rhPx=Math.round(rh*96);
+  let h=`<table style="width:100%;border-collapse:collapse;border-bottom:2pt solid #000000;">
+    <tr>
+      <td style="width:${lw}in;text-align:center;vertical-align:middle;padding:0;">${s.logoL.src?`<img src="${s.logoL.src}" width="${lwPx}" height="${lhPx}" style="width:${lw}in;height:${lh}in;">`:''}</td>
+      <td style="text-align:center;vertical-align:middle;padding:4pt 6pt;">
+        <div style="font-size:17pt;font-weight:bold;text-transform:uppercase;">${esc(s.school||'School / Institute Name')}</div>
+        <div style="font-size:13pt;font-weight:bold;margin-top:3pt;">Question Bank</div>
+        ${subj?`<div style="font-size:10.5pt;font-style:italic;">Subject: ${esc(subj.name)}${chLabel?' · Chapter: '+esc(chLabel):''}</div>`:''}
+        <div style="font-size:10.5pt;font-weight:bold;">${withAnswers?'— WITH ANSWER KEY —':'— WITHOUT ANSWERS —'}</div>
+        <table style="width:100%;border-collapse:collapse;margin-top:4pt;"><tr>
+          <td style="font-size:10.5pt;font-weight:bold;text-align:left;">Total Questions: ${items.length}</td>
+          <td style="font-size:10.5pt;font-weight:bold;text-align:right;">Total Marks: ${totalM}</td>
+        </tr></table>
+      </td>
+      <td style="width:${rw}in;text-align:center;vertical-align:middle;padding:0;">${s.logoR.src?`<img src="${s.logoR.src}" width="${rwPx}" height="${rhPx}" style="width:${rw}in;height:${rh}in;">`:''}</td>
+    </tr>
+  </table>`;
+  if(!items.length){h+='<div style="text-align:center;padding:20pt 0;color:#666;">No questions match the current filters.</div>';return h;}
+  const groups={};
+  items.forEach(q=>{const key=q.chapterId||'_';if(!groups[key])groups[key]=[];groups[key].push(q);});
+  const chKeys=Object.keys(groups);const showTitles=chKeys.length>1;
+  let globalNo=0;
+  chKeys.forEach(chId=>{
+    const chItems=groups[chId].slice().sort((a,b)=>(+a.marks||0)-(+b.marks||0));
+    if(showTitles)h+=`<div style="font-weight:bold;font-size:12pt;text-align:center;text-transform:uppercase;border-bottom:1pt solid #000000;margin:14pt 0 6pt 0;padding-bottom:2pt;">${esc(chId==='_'?'Unassigned Questions':chapterName(chId))}</div>`;
+    chItems.forEach(q=>{globalNo++;const item=Object.assign({},q,{no:globalNo,format:guessFormat(q)});h+=renderWordQuestion(item,withAnswers);});});
+  return h;}
+function wordCSS(){
+  const s=DB.setup;
+  const page=PAGE_SIZES[s.pageSize]||PAGE_SIZES['A4'];
+  const m=s.margins;
+  return `
+  @page{size:${page.css};margin:${m.top}in ${m.right}in ${m.bottom}in ${m.left}in;mso-page-orientation:portrait;}
+  body{font-family:'Times New Roman',serif;font-size:11.5pt;line-height:1.45;color:#000;margin:0;}
+  table{border-collapse:collapse;}
+  .wp-school{font-size:17pt;font-weight:bold;text-transform:uppercase;letter-spacing:0.5pt;line-height:1.2;}
+  .wp-exam{font-size:13pt;font-weight:bold;margin-top:3pt;}
+  .wp-sub{font-size:10.5pt;font-style:italic;margin-top:2pt;}
+  img{max-width:100%;}`;}
+function downloadWord(mode){
+  const docCSS=wordCSS();
+  const qp=renderDocForWord(false);
+  const ak=renderDocForWord(true);
+  let docs;
+  if(mode==='qp')docs=[qp];
+  else if(mode==='ak')docs=[ak];
+  else docs=[qp,ak];
+  const body=docs.map((d,i)=>`<div>${d}</div>`+(i<docs.length-1?'<br clear="all" style="page-break-before:always">':'')).join('');
+  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="utf-8"><title>${esc(DB.setup.exam||'Question Paper')}</title>
+      <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+      <style>${docCSS}</style></head>
+    <body>${body}</body>
+  </html>`;
+  const blob=new Blob(['\ufeff',html],{type:'application/msword'});
+  const suffix=mode==='qp'?'QuestionPaper':mode==='ak'?'AnswerKey':'QuestionPaper_AnswerKey';
+  download(blob,baseFileName()+'_'+suffix+'.doc');}
+$('#btnBankExportWord').onclick=()=>{
+  const items=getFilteredBankQuestions();
+  if(!items.length){alert('No questions match the current filters.');return;}
+  const withoutAns=renderBankDocForWord(items,false);
+  const withAns=renderBankDocForWord(items,true);
+  const body=`<div>${withoutAns}</div><br clear="all" style="page-break-before:always"><div>${withAns}</div>`;
+  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="utf-8"><title>Question Bank</title>
+      <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+      <style>${wordCSS()}</style></head>
+    <body>${body}</body>
+  </html>`;
+  const blob=new Blob(['\ufeff',html],{type:'application/msword'});
+  download(blob,baseFileName()+'_QuestionBank.doc');};
+
+$('#btnFinal').onclick=()=>{
+  if(!DB.paper||!DB.paper.items.length){alert('Generate first.');return;}
+  const qp=renderPreviewPages(false);
+  const s=DB.setup;
+  const html=`<h2>Final Preview</h2>
+    <div class="row" style="margin-bottom:12px">
+      <button class="btn" id="dlWordQP">⬇ Word — Question Paper</button>
+      <button class="btn" id="dlWordAK">⬇ Word — Answer Key</button>
+      <button class="btn" id="dlWordBoth">⬇ Word — QP + Answer Key</button>
+      <button class="btn ghost" id="dlPdfQP">🖨 PDF — Question Paper</button>
+      <button class="btn ghost" id="dlPdfAK">🖨 PDF — Answer Key</button>
+      <button class="btn ghost" id="dlPdfBoth">🖨 PDF — QP + Answer Key</button>
+    </div>
+    <div class="hint">Print dialog → <b>Save as PDF</b>, page size = <b>${esc(s.pageSize)}</b>, Margins: Default, Scale: 100%, headers/footers off. ${s.showPageNumbers===false?'<b>Page numbers are off.</b>':'Every page shows "Page X of N".'}</div>
+    <div class="paper-wrap" style="max-height:55vh;overflow:auto">${qp}</div>
+    <div class="modal-actions"><button class="btn ghost" data-close>Close</button></div>`;
+  openModal(html,box=>{
+    $('#dlWordQP',box).onclick=()=>downloadWord('qp');
+    $('#dlWordAK',box).onclick=()=>downloadWord('ak');
+    $('#dlWordBoth',box).onclick=()=>downloadWord('both');
+    $('#dlPdfQP',box).onclick=()=>printPdf('qp');
+    $('#dlPdfAK',box).onclick=()=>printPdf('ak');
+    $('#dlPdfBoth',box).onclick=()=>printPdf('both');});};
+function baseFileName(){
+  const s=DB.setup;const subj=getSubject(s.subjectId);
+  const parts=[s.school||'School',subj?subj.name:'',s.exam||'Exam',s.date||''].filter(Boolean);
+  return parts.join('_').replace(/[^\w\-\u0900-\u097F]+/g,'_').slice(0,80);}
+function printPdf(mode){
+  updatePrintPageStyle();
+  const qp=renderPreviewPages(false);
+  const ak=renderPreviewPages(true);
+  let body;
+  if(mode==='qp')body=qp;
+  else if(mode==='ak')body=ak;
+  else body=qp+ak;
+  closeModal();
+  $('#printArea').innerHTML=body;
+  void $('#printArea').offsetHeight;
+  setTimeout(()=>window.print(),250);}
+
+function renderSavedList(){
+  const w=$('#savedList');
+  if(!DB.savedPapers.length){w.innerHTML='<div class="muted">No saved papers yet.</div>';return;}
+  w.innerHTML=DB.savedPapers.map(p=>{
+    const subj=getSubject(p.subjectId||(p.setup&&p.setup.subjectId));
+    return `<div class="list-item"><div class="li-head"><b style="flex:1">${esc(p.name)}</b>${subj?`<span class="tag b">${esc(subj.name)}</span>`:''}<span class="tag">${p.items.length} Qs</span><span class="tag o">${p.items.reduce((a,i)=>a+(+i.marks||0),0)} marks</span><span class="muted">${new Date(p.savedAt).toLocaleString()}</span></div><div class="li-body muted">${esc(p.setup.school||'')} · ${esc(p.setup.exam||'')} · ${esc(fmtDate(p.setup.date))}</div><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn xs" data-open="${p.id}">Open</button><button class="btn xs ghost" data-rename="${p.id}">Rename</button><button class="btn xs danger" data-delsaved="${p.id}">Delete</button></div></div>`;}).join('');}
+$('#savedList').addEventListener('click',e=>{
+  const o=e.target.closest('[data-open]'),r=e.target.closest('[data-rename]'),d=e.target.closest('[data-delsaved]');
+  if(o){const p=DB.savedPapers.find(x=>x.id===o.dataset.open);if(!p)return;
+    DB.setup=normalizeSetup(JSON.parse(JSON.stringify(p.setup)));
+    DB.paper={items:JSON.parse(JSON.stringify(p.items)),subjectId:p.subjectId||DB.setup.subjectId};
+    (DB.paper.items||[]).forEach(it=>normalizeQuestion(it));
+    saveDB();renderSetup();switchTab('preview');renderPreview();}
+  if(r){const p=DB.savedPapers.find(x=>x.id===r.dataset.rename);if(!p)return;const v=prompt('Rename:',p.name);if(v&&v.trim()){p.name=v.trim();saveDB();renderSavedList();}}
+  if(d){if(!confirm('Delete this saved paper?'))return;DB.savedPapers=DB.savedPapers.filter(x=>x.id!==d.dataset.delsaved);saveDB();renderSavedList();}});
+
+function renderBlueprint(){
+  const items=numberedItems();const w=$('#bpContent');
+  if(!items.length){w.innerHTML='<div class="muted">No paper generated yet.</div>';return;}
+  const subjId=DB.paper.subjectId||DB.setup.subjectId;const subj=getSubject(subjId);
+  const chapters=chaptersOfSubject(subjId).filter(c=>items.some(i=>i.chapterId===c.id));
+  const present=Array.from(new Set(items.map(i=>+i.marks||1))).sort((a,b)=>a-b);
+  const ML=present.length?present:marksList();
+  let h=subj?`<h3 style="margin-top:0">Subject: ${esc(subj.name)}</h3>`:'';
+  h+='<h4 style="font-size:13px;margin:4px 0 8px">A. Chapter × Marks</h4>';
+  h+='<div class="tscroll"><table class="grid-table"><thead><tr><th>Chapter</th>'+ML.map(m=>`<th>${m} Mark${m>1?'s':''}</th>`).join('')+'<th>Total Q</th><th>Total Marks</th></tr></thead><tbody>';
+  chapters.forEach(ch=>{
+    const ci=items.filter(i=>i.chapterId===ch.id);
+    h+=`<tr><td>${esc(ch.name)}</td>`;
+    ML.forEach(m=>{const nums=ci.filter(i=>+i.marks===m).map(i=>i.no);h+=`<td>${nums.length?nums.join(', '):'—'}</td>`;});
+    h+=`<td>${ci.length}</td><td>${ci.reduce((a,i)=>a+(+i.marks||0),0)}</td></tr>`;});
+  h+=`<tr class="totrow"><td>Total</td>`+ML.map(m=>`<td>${items.filter(i=>+i.marks===m).length}</td>`).join('')+`<td>${items.length}</td><td>${totalMarks()}</td></tr></tbody></table></div>`;
+  h+='<h4 style="font-size:13px;margin:22px 0 8px">B. Chapter × Question Type</h4>';
+  h+='<div class="tscroll"><table class="grid-table"><thead><tr><th>Chapter</th><th>RU</th><th>AP</th><th>EAC</th><th>Total</th></tr></thead><tbody>';
+  chapters.forEach(ch=>{
+    const ci=items.filter(i=>i.chapterId===ch.id);
+    h+=`<tr><td>${esc(ch.name)}</td>`;
+    ['RU','AP','EAC'].forEach(t=>{const g=ci.filter(i=>(i.type||'RU')===t);const nums=g.map(i=>i.no);h+=`<td>${g.length?`${nums.join(', ')}<br><span class="muted">(${g.reduce((a,i)=>a+(+i.marks||0),0)} marks)</span>`:'—'}</td>`;});
+    h+=`<td>${ci.length}</td></tr>`;});
+  h+=`<tr class="totrow"><td>Total</td>`+['RU','AP','EAC'].map(t=>`<td>${items.filter(i=>(i.type||'RU')===t).length}</td>`).join('')+`<td>${items.length}</td></tr></tbody></table></div>`;
+  h+='<h4 style="font-size:13px;margin:22px 0 8px">C. Format</h4>';
+  h+='<div class="tscroll"><table class="grid-table"><thead><tr><th>Format</th><th>Questions</th><th>Marks</th><th>Q numbers</th></tr></thead><tbody>';
+  ['mcq','tf','desc'].forEach(f=>{
+    const g=items.filter(i=>(i.format||'desc')===f);
+    h+=`<tr><td>${FORMAT_FULL[f]}</td><td>${g.length}</td><td>${g.reduce((a,i)=>a+(+i.marks||0),0)}</td><td>${g.length?g.map(i=>i.no).join(', '):'—'}</td></tr>`;});
+  h+=`<tr class="totrow"><td>Total</td><td>${items.length}</td><td>${totalMarks()}</td><td>—</td></tr></tbody></table></div>`;
+  w.innerHTML=h;}
+$('#btnBpRefresh').onclick=renderBlueprint;
+
+$('#btnReset').onclick=()=>{
+  const pwd=prompt('🔒 Admin password to reset ALL data:');
+  if(pwd===null)return;
+  if(pwd!=='Admin123'){alert('Incorrect password.');return;}
+  if(!confirm('Delete ALL data?'))return;
+  try{['qpg_data_v13','qpg_data_v12','qpg_data_v11','qpg_data_v10','qpg_data_v9','qpg_data_v8','qpg_data_v7','qpg_data_v6','qpg_data_v5','qpg_data_v4','qpg_data_v3','qpg_data_v2'].forEach(k=>localStorage.removeItem(k));}catch(e){}
+  fileHandle=null;DB=defaultDB();initDefaults();
+  DB.users.push({id:'Admin',password:'123',displayName:'Admin',tabs:['setup','preview','bank','blueprint','subjects','saved','help']});
+  saveDB();renderAll();
+  currentUser=null;
+  $('#loginScreen').classList.remove('hide');
+  alert('All data reset. Default user Admin / 123 restored.');};
+
+$('#btnExportHtml').onclick=()=>{
+  const json=JSON.stringify(DB).replace(/</g,'\\u003c');
+  let html=ORIGINAL_HTML;
+  const re=/(<script id="embedded-data"[^>]*>)[\s\S]*?(<\/script>)/;
+  if(re.test(html))html=html.replace(re,(m,a,b)=>a+'\n'+json+'\n'+b);
+  else html=html.replace('</body>',`<script id="embedded-data" type="application/json">${json}<\/script>\n</body>`);
+  download(new Blob([html],{type:'text/html'}),'QuestionPaperApp.html');
+  alert('Saved! Copy the file to a pen drive or any device.');};
+$('#btnConnectFile').onclick=()=>{if(fileHandle){if(confirm('Disconnect auto-save?')){fileHandle=null;updateSaveState();}return;}connectToFile();};
+$('#btnExportJson').onclick=()=>download(new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}),'question-bank-backup.json');
+$('#btnImportJson').onclick=()=>$('#fileJson').click();
+$('#fileJson').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const data=JSON.parse(r.result);DB=mergeDB(DB,data);initDefaults();saveDB();renderAll();alert('Imported.');}catch(err){alert('Invalid JSON.');}};
+  r.readAsText(f);e.target.value='';});
+
+function openModal(html,onMount){const box=$('#modalBox');box.innerHTML=html;$('#modalBg').classList.add('open');box.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModal);if(onMount)onMount(box);}
+function closeModal(){$('#modalBg').classList.remove('open');$('#modalBox').innerHTML='';}
+$('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+$('#helpContent').innerHTML=`
+<h2 style="margin-top:0">Help &amp; FAQ</h2>
+<p>Question paper, answer key, blue print — with 3-level login (Host / User / Guest Demo) and full user management.</p>
+
+<h4>Login dashboard</h4>
+<ul>
+<li><b>Host Login:</b> master account — full access to all tabs and user management.</li>
+<li><b>User Login:</b> log in with an ID and password the host created. Only the assigned tabs are visible.</li>
+<li><b>Try Demo:</b> explore Setup, Preview &amp; Edit, Subjects &amp; Chapters, and Help. 1 free paper generation. No Question Bank tab. Cannot save papers.</li>
+</ul>
+
+<h4>User management (Host only)</h4>
+<ul>
+<li>Open the <b>Users</b> tab from the sidebar (visible only to the host).</li>
+<li>Add a new user: enter Login ID, Display Name, Password, and check the tabs they should access. Click <b>Add User</b>.</li>
+<li>The new user can now log in from the User Login option.</li>
+<li>Edit or delete existing users from the table.</li>
+</ul>
+
+<h4>Reset password</h4>
+<p>The Reset All button (sidebar → bottom) requires <code>Admin123</code>.</p>
+
+<h4>File password</h4>
+<p>Click <b>🔐 App Password</b> in the sidebar to set an extra file password after login.</p>
+
+<h4>Printing</h4>
+<ul>
+<li><b>PDF:</b> Final Preview → PDF. Save as PDF, page size = app size, Margins: Default, Scale: 100%, headers/footers off.</li>
+<li><b>Word:</b> 3-column table per question, with logos in the header.</li>
+</ul>
+`;
+
+function renderAll(){
+  try{renderSetup();}catch(e){console.error('renderSetup',e);}
+  try{renderSubjectsTab();}catch(e){console.error('renderSubjectsTab',e);}
+  try{renderBankSelects();}catch(e){console.error('renderBankSelects',e);}
+  try{renderBankList();}catch(e){console.error('renderBankList',e);}
+  try{renderSavedList();}catch(e){console.error('renderSavedList',e);}
+  try{renderPreview();}catch(e){console.error('renderPreview',e);}
+  try{renderBlueprint();}catch(e){console.error('renderBlueprint',e);}
+  try{renderUserManagement();}catch(e){console.error('renderUserManagement',e);}
+}
+
+(function init(){
+  loadDB();
+  renderOptList();renderTableEditor();applyFormat();refreshMarkDropdowns();
+  updatePrintPageStyle();syncPreviewControls();
+  renderAll();updateSaveState();
+  currentUser=null;
+  applyTabPermissions();
+  showLoginScreen();
+  window.addEventListener('beforeunload',saveDB);
+})();
+</script>
+</body>
+</html>
